@@ -144,6 +144,7 @@ class Sources extends Database {
         // select source by id if specified or return all sources
         if (isset($id)) {
             $ret = \F3::get('db')->exec('SELECT id, title, tags, spout, params, filter, error FROM ' . \F3::get('db_prefix') . 'sources WHERE id=:id', [':id' => $id]);
+            $ret = $this->stmt->ensureRowTypes($ret, ['id' => \daos\PARAM_INT]);
             if (isset($ret[0])) {
                 $ret = $ret[0];
             } else {
@@ -151,6 +152,7 @@ class Sources extends Database {
             }
         } else {
             $ret = \F3::get('db')->exec('SELECT id, title, tags, spout, params, filter, error FROM ' . \F3::get('db_prefix') . 'sources ORDER BY error DESC, lower(title) ASC');
+            $ret = $this->stmt->ensureRowTypes($ret, ['id' => \daos\PARAM_INT]);
         }
 
         return $ret;
@@ -162,13 +164,18 @@ class Sources extends Database {
      * @return mixed all sources
      */
     public function getWithUnread() {
-        return \F3::get('db')->exec('SELECT
+        $ret = \F3::get('db')->exec('SELECT
             sources.id, sources.title, COUNT(items.id) AS unread
             FROM ' . \F3::get('db_prefix') . 'sources AS sources
             LEFT OUTER JOIN ' . \F3::get('db_prefix') . 'items AS items
                  ON (items.source=sources.id AND ' . $this->stmt->isTrue('items.unread') . ')
             GROUP BY sources.id, sources.title
             ORDER BY lower(sources.title) ASC');
+
+        return $this->stmt->ensureRowTypes($ret, [
+            'id' => \daos\PARAM_INT,
+            'unread' => \daos\PARAM_INT
+        ]);
     }
 
     /**
@@ -194,7 +201,7 @@ class Sources extends Database {
                 ON sources.id=sourceicons.source
             ORDER BY ' . $this->stmt->nullFirst('sources.error', 'DESC') . ', lower(sources.title)');
 
-        return $ret;
+        return $this->stmt->ensureRowTypes($ret, ['id' => \daos\PARAM_INT]);
     }
 
     /**

@@ -22,7 +22,7 @@ class Statements {
         \F3::get('db')->exec($query, $params);
         $res = \F3::get('db')->exec('SELECT LAST_INSERT_ID() as lastid');
 
-        return $res[0]['lastid'];
+        return intval($res[0]['lastid']);
     }
 
     /**
@@ -152,15 +152,19 @@ class Statements {
             foreach ($expectedRowTypes as $columnIndex => $type) {
                 if (array_key_exists($columnIndex, $row)) {
                     switch ($type) {
-                        case \PDO::PARAM_INT:
+                        case \daos\PARAM_INT:
                             $value = intval($row[$columnIndex]);
                             break;
-                        case \PDO::PARAM_BOOL:
+                        case \daos\PARAM_BOOL:
                             if ($row[$columnIndex] == '1') {
                                 $value = true;
                             } else {
                                 $value = false;
                             }
+                            break;
+                        case \daos\PARAM_CSV:
+                            var_dump($row[$columnIndex]);
+                            $value = explode(',', $row[$columnIndex]);
                             break;
                     }
                     $rows[$rowIndex][$columnIndex] = $value;

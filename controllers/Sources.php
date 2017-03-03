@@ -209,7 +209,7 @@ class Sources extends BaseController {
 
         $return = [
             'success' => true,
-            'id' => $id,
+            'id' => intval($id),
             'title' => $title
         ];
 

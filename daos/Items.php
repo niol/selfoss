@@ -94,8 +94,7 @@ class Items extends Database {
         // remove posts with hidden tags
         if (!isset($options['tag']) || strlen($options['tag']) === 0) {
             foreach ($items as $idx => $item) {
-                $tags = explode(',', $item['tags']);
-                foreach ($tags as $tag) {
+                foreach ($item['tags'] as $tag) {
                     if (strpos(trim($tag), '#') === 0) {
                         unset($items[$idx]);
                         break;
