@@ -358,6 +358,79 @@ class Items extends Database {
     }
 
     /**
+     * sync new db items starting from id
+     *
+     * @return array of items
+     */
+    public function sync($sinceId, $notBefore, $since, $howMany) {
+        $query = 'SELECT
+        items.id, datetime, items.title AS title, content, unread, starred, source, thumbnail, icon, uid, link, updatetime, author, sources.title as sourcetitle, sources.tags as tags
+        FROM ' . \F3::get('db_prefix') . 'items AS items, ' . \F3::get('db_prefix') . 'sources AS sources
+        WHERE items.source=sources.id
+            AND (' . $this->stmt->isTrue('unread') .
+                 ' OR ' . $this->stmt->isTrue('starred') .
+                 ' OR datetime >= :notBefore
+                )
+            AND (items.id > :sinceId OR
+                 (datetime < :notBefore AND updatetime > :since))
+        ORDER BY items.id LIMIT :howMany';
+
+        $params = [
+            'sinceId' => [$sinceId, \PDO::PARAM_INT],
+            'howMany' => [$howMany, \PDO::PARAM_INT],
+            'notBefore' => [$notBefore->format(\DateTime::ATOM), \PDO::PARAM_STR],
+            'since' => [$since->format(\DateTime::ATOM), \PDO::PARAM_STR]
+        ];
+
+        return $this->stmt->ensureRowTypes(\F3::get('db')->exec($query, $params), [
+            'id' => \PDO::PARAM_INT,
+            'unread' => \PDO::PARAM_BOOL,
+            'starred' => \PDO::PARAM_BOOL,
+            'source' => \PDO::PARAM_INT
+        ]);
+    }
+
+    /**
+     * Lowest id of interest
+     *
+     * @return lowest id of interest
+     */
+    public function lowestIdOfInterest() {
+        $lowest = $this->stmt->ensureRowTypes(
+            \F3::get('db')->exec(
+                'SELECT id FROM ' . \F3::get('db_prefix') . 'items AS items
+                 WHERE ' . $this->stmt->isTrue('unread') .
+                    ' OR ' . $this->stmt->isTrue('starred') .
+                ' ORDER BY id LIMIT 1'),
+            ['id' => \PDO::PARAM_INT]
+        );
+        if ($lowest) {
+            return $lowest[0]['id'];
+        }
+
+        return 0;
+    }
+
+    /**
+     * Last id in db
+     *
+     * @return int last id in db
+     */
+    public function lastId() {
+        $lastId = $this->stmt->ensureRowTypes(
+            \F3::get('db')->exec(
+                'SELECT id FROM ' . \F3::get('db_prefix') . 'items AS items
+                 ORDER BY id DESC LIMIT 1'),
+            ['id' => \PDO::PARAM_INT]
+        );
+        if ($lastId) {
+            return $lastId[0]['id'];
+        }
+
+        return 0;
+    }
+
+    /**
      * return all thumbnails
      *
      * @return string[] array with thumbnails
@@ -543,5 +616,94 @@ class Items extends Database {
         ]);
 
         return $res;
+    }
+
+    /**
+     * bulk update of item status
+     *
+     * @param array of statuses updates
+     *
+     * @return void
+     */
+    public function bulkStatusUpdate($statuses) {
+        $sql = [];
+        foreach ($statuses as $status) {
+            if (array_key_exists('id', $status)) {
+                $id = intval($status['id']);
+                if ($id > 0) {
+                    $statusUpdate = null;
+
+                    // sanitize statuses
+                    foreach (['unread', 'starred'] as $sk) {
+                        if (array_key_exists($sk, $status)) {
+                            if ($status[$sk] == 'true') {
+                                $statusUpdate = [
+                                    'sk' => $sk,
+                                    'sql' => $this->stmt->isTrue($sk)
+                                ];
+                            } elseif ($status[$sk] == 'false') {
+                                $statusUpdate = [
+                                    'sk' => $sk,
+                                    'sql' => $this->stmt->isFalse($sk)
+                                ];
+                            }
+                        }
+                    }
+
+                    // sanitize update time
+                    if (array_key_exists('datetime', $status)) {
+                        $updateDate = new \DateTime($status['datetime']);
+                    } else {
+                        $updateDate = false;
+                    }
+
+                    if ($statusUpdate !== null && $updateDate) {
+                        if (array_key_exists($id, $sql)) {
+                            // merge status updates for the same entry and
+                            // ensure all saved status updates have been made
+                            // after the last server update for this entry.
+                            if (!array_key_exists($statusUpdate['sk'],
+                                                  $sql[$id]['updates'])
+                                || $updateDate > $sql['id']['datetime']) {
+                                $sql[$id]['updates'][$sk] = $statusUpdate['sql'];
+                            }
+                            if ($updateDate < $sql[$id]['datetime']) {
+                                $sql[$id]['datetime'] = $updateDate;
+                            }
+                        } else {
+                            // create new status update
+                            $sql[$id] = [
+                                'updates' => [$sq => $statusUpdate['sql']],
+                                'datetime' => $updateDate->format(\DateTime::ATOM)
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($sql) {
+            \F3::get('db')->begin();
+            foreach ($sql as $id => $q) {
+                $params = [
+                    ':id' => [$id, \PDO::PARAM_INT],
+                    ':statusUpdate' => [$q['datetime'], \PDO::PARAM_STR]
+                ];
+                $updated = \F3::get('db')->exec(
+                    'UPDATE ' . \F3::get('db_prefix') . 'items
+                    SET ' . implode(', ', array_values($q['updates'])) . '
+                    WHERE id = :id AND updatetime < :statusUpdate', $params);
+                if ($updated == 0) {
+                    // entry status was updated in between so updatetime must
+                    // be updated to ensure client side consistency of
+                    // statuses.
+                    \F3::get('db')->exec(
+                        'UPDATE ' . \F3::get('db_prefix') . 'items
+                         SET ' . $this->stmt->rowTouch('updatetime') . '
+                         WHERE id = :id', [':id' => [$id, \PDO::PARAM_INT]]);
+                }
+            }
+            \F3::get('db')->commit();
+        }
     }
 }

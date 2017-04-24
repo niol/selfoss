@@ -54,8 +54,26 @@ selfoss.ui = {
     },
 
 
-    entryStarr: function(id, starred) {
-        var button = $('#entry' + id + ' .entry-starr, #entrr' + id + ' .entry-starr');
+    setOffline: function() {
+        $('.offlineable').addClass('offline');
+        $('.offlineable').removeClass('online');
+        $('#nav-tags li:not(:first)').remove();
+        if (!$('#nav-sources-title').hasClass("nav-sources-collapsed"))
+            $('#nav-sources-title').click();
+        selfoss.events.navigation();
+    },
+
+
+    setOnline: function() {
+        $('.offlineable').addClass('online');
+        $('.offlineable').removeClass('offline');
+        selfoss.events.navigation();
+    },
+
+
+    entryStarr: function(id, starred, domNode) {
+        var button = $("#entry"+id+" .entry-starr, #entrr"+id+" .entry-starr",
+                       domNode);
 
         // update button
         if (starred) {
@@ -68,9 +86,10 @@ selfoss.ui = {
     },
 
 
-    entryMark: function(id, unread) {
-        var button = $('#entry' + id + ' .entry-unread, #entrr' + id + ' .entry-unread');
-        var parent = $('#entry' + id + ', #entrr' + id);
+    entryMark: function(id, unread, domNode) {
+        var button = $("#entry"+id+" .entry-unread, #entrr"+id+" .entry-unread",
+                       domNode);
+        var parent = $("#entry"+id+", #entrr"+id, domNode);
 
         // update button and entry style
         if (unread) {
@@ -125,6 +144,34 @@ selfoss.ui = {
                 }
             }
         }
+    },
+
+
+    beforeReloadList: function(clear) {
+        var clear = (typeof clear !== 'undefined') ? clear : true;
+
+        var content = $('#content');
+
+        content.addClass('loading');
+        if (clear)
+            content.html("");
+
+        $('#stream-buttons').hide();
+    },
+
+
+    afterReloadList: function(cleared) {
+        var cleared = (typeof cleared !== 'undefined') ? cleared : true;
+
+        $('#content').removeClass('loading');
+
+        if (cleared)
+            $(document).scrollTop(0);
+
+        $('#stream-buttons').show();
+        selfoss.ui.refreshEntryDatetimes();
+        selfoss.events.entries();
+        selfoss.events.search();
     },
 
 
@@ -308,6 +355,73 @@ selfoss.ui = {
                 $('.entry-datetime', this).html(datetimeStr);
             }
         });
+    },
+
+
+    refreshTagSourceUnread: function(tagCounts, sourceCounts, diff) {
+        var diff = (typeof diff !== 'undefined') ? diff : true;
+
+        tagCounts.forEach(function(tagCount) {
+            var tagsCountEl = $('#nav-tags > li > span.tag')
+                .filter(function(i){
+                    return $(this).html() == tagCount.tag; }
+                ).next();
+
+            var unreadCount = 0;
+            if (diff) {
+                if (tagsCountEl.html() != '')
+                    unreadCount = parseInt(tagsCountEl.html());
+                unreadCount = unreadCount + tagCount.count;
+            } else {
+                unreadCount = tagCount.count;
+            }
+
+            if (unreadCount > 0)
+                tagsCountEl.html(unreadCount);
+            else
+                tagsCountEl.html('');
+        });
+
+        if (selfoss.sourcesNavLoaded) {
+            sourceCounts.forEach(function(sourceCount) {
+                var sourceNav = $('#source' + sourceCount.source);
+                var sourcesCountEl = $('span.unread', sourceNav);
+
+                var unreadCount = 0;
+                if (diff) {
+                    if (sourcesCountEl.html() != '')
+                        unreadCount = parseInt(sourcesCountEl.html());
+                    unreadCount = unreadCount + sourceCount.count;
+                } else {
+                    unreadCount = sourceCount.count;
+                }
+
+                if (unreadCount > 0) {
+                    sourceNav.addClass('unread');
+                    sourcesCountEl.html(unreadCount);
+                } else {
+                    sourceNav.removeClass('unread');
+                    sourcesCountEl.html('');
+                }
+            });
+        }
+    },
+
+
+    refreshOfflineCounts: function(offlineCounts) {
+        for (var ck in offlineCounts) {
+            if (offlineCounts.hasOwnProperty(ck)) {
+                var widget = $('#nav-filter-' + ck);
+                var offlineWidget = $('span.offline-count', widget);
+                offlineWidget.html(offlineCounts[ck]);
+
+                if (parseInt($('span.count', widget).html()) !=
+                    offlineCounts[ck])
+                    offlineWidget.addClass('diff');
+                else
+                    offlineWidget.removeClass('diff');
+            }
+        }
     }
 
 

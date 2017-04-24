@@ -43,9 +43,9 @@ selfoss.events.search = function() {
         selfoss.filterReset();
         selfoss.filter.search = term;
         selfoss.events.setHash();
-        selfoss.dbOnline.reloadList();
-
-        if (term == '') {
+        selfoss.db.reloadList();
+        
+        if(term=="")
             $('#search-list').hide();
         } else {
             $('#search-list').show();
@@ -103,6 +103,6 @@ selfoss.events.search = function() {
         $('#search-list').hide();
         $('#search-list').html('');
         $('#search').removeClass('active');
-        selfoss.dbOnline.reloadList();
+        selfoss.db.reloadList();
     });
 };
