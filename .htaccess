@@ -66,10 +66,6 @@ RewriteRule (.*) public/$1 [L]
   # JavaScript
     ExpiresByType application/javascript                "access plus 1 year"
 
-  # Manifest files
-    ExpiresByType application/x-web-app-manifest+json   "access plus 0 seconds"
-    ExpiresByType text/cache-manifest                   "access plus 0 seconds"
-
   # Media
     ExpiresByType audio/ogg                             "access plus 1 month"
     ExpiresByType image/gif                             "access plus 1 month"
