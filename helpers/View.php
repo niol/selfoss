@@ -237,4 +237,102 @@ class View {
 
         return \CssMin::minify($content);
     }
+
+    /**
+     * List files according to globbing pattern from selfoss base.
+     *
+     * @param string relative globbing pattern
+     *
+     * @return array list of files paths relative to base
+     */
+    private static function ls($relativePattern) {
+        $files = [];
+        $absolutePattern = \F3::get('BASEDIR') . '/' . $relativePattern;
+        $basePathLength = strlen(\F3::get('BASEDIR')) + 1;
+        foreach (glob($absolutePattern) as $fn) {
+            if ($fn[0] != '.') {
+                $files[] = substr($fn, $basePathLength);
+            }
+        }
+
+        return $files;
+    }
+
+    /**
+     * Build the CACHE MANIFEST from static ressources.
+     *
+     * @return void
+     */
+    public function genAppcacheManifest() {
+        $offlineFiles = array_merge([
+                                        'public/all.js',
+                                        'public/all.css',
+                                        'public/css/fonts.css'
+                                    ],
+                                    self::ls('public/images/*'),
+                                    self::ls('public/fonts/*.woff'));
+        $indirectRessources = [
+            'defaults.ini',
+            'config.ini',
+            'templates/home.phtml'
+        ];
+
+        $staticmtime = self::maxmtime(array_merge($offlineFiles, $indirectRessources));
+
+        $target = \F3::get('BASEDIR') . '/public/selfoss.appcache';
+
+        if (!file_exists($target) || filemtime($target) < $staticmtime) {
+            $subdir = parse_url($this->base)['path'];
+
+            $f = fopen($target, 'w');
+            fwrite($f, "CACHE MANIFEST\n");
+            fwrite($f, '# v=' . $staticmtime . "\n");
+            foreach ($offlineFiles as $fn) {
+                if (substr($fn, 0, 7) == 'public/') {
+                    $fn = substr($fn, 7);
+                }
+                fwrite($f, $subdir . $fn . "\n");
+            }
+            fwrite($f, "NETWORK:\n");
+            fwrite($f, "*\n");
+            fclose($f);
+        }
+    }
+
+    private static function mime($filepath) {
+        $fileExt = pathinfo($filepath, PATHINFO_EXTENSION);
+
+        $mime = null;
+        if ($fileExt == 'appcache') {
+            $mime = 'text/cache-manifest';
+        } else {
+            $mime = mime_content_type($filepath);
+        }
+
+        return $mime;
+    }
+
+    public function sendfile($relativePath) {
+        $path = \F3::get('BASEDIR') . '/' . $relativePath;
+
+        if (file_exists($path)) {
+            $send = true;
+            $fileDate = new \Datetime('@' . filemtime($path));
+            if (isset(\F3::get('HEADERS')['If-Modified-Since'])) {
+                $clientDate = new \Datetime(\F3::get('HEADERS')['If-Modified-Since']);
+                $send = $clientDate < $fileDate;
+            }
+            if ($send) {
+                header('Cache-Control: must-revalidate');
+                header('Content-Length: ' . filesize($path));
+                header('Last-Modified: ' . $fileDate->format('Y-m-d H:i:s \G\M\T'));
+                header('Content-Type: ' . self::mime($path));
+                readfile($path);
+            } else {
+                \F3::status(304);
+            }
+        } else {
+            \F3::error(404);
+        }
+    }
 }

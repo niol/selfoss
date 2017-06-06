@@ -39,6 +39,12 @@ var selfoss = {
      * initialize application
      */
     init: function() {
+        window.applicationCache.addEventListener('updateready', function(event) {
+            selfoss.ui.showMessage('selfoss has been updated, please reload',
+                                   'Reload',
+                                   function() {location.reload();});
+        });
+
         jQuery(document).ready(function() {
             if (selfoss.hasSession() || !$('body').hasClass('authenabled')) {
                 selfoss.ui.login();
