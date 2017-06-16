@@ -163,7 +163,6 @@ class Statements {
                             }
                             break;
                         case \daos\PARAM_CSV:
-                            var_dump($row[$columnIndex]);
                             $value = explode(',', $row[$columnIndex]);
                             break;
                     }
