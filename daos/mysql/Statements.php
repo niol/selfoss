@@ -22,7 +22,7 @@ class Statements {
         \F3::get('db')->exec($query, $params);
         $res = \F3::get('db')->exec('SELECT LAST_INSERT_ID() as lastid');
 
-        return intval($res[0]['lastid']);
+        return (int) $res[0]['lastid'];
     }
 
     /**
@@ -153,7 +153,7 @@ class Statements {
                 if (array_key_exists($columnIndex, $row)) {
                     switch ($type) {
                         case \daos\PARAM_INT:
-                            $value = intval($row[$columnIndex]);
+                            $value = (int) $row[$columnIndex];
                             break;
                         case \daos\PARAM_BOOL:
                             if ($row[$columnIndex] == '1') {
