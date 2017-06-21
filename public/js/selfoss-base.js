@@ -39,10 +39,12 @@ var selfoss = {
      * initialize application
      */
     init: function() {
-        window.applicationCache.addEventListener('updateready', function(event) {
+        window.applicationCache.addEventListener('updateready', function() {
             selfoss.ui.showMessage('selfoss has been updated, please reload',
-                                   'Reload',
-                                   function() {location.reload();});
+                'Reload',
+                function() {
+                    location.reload();
+                });
         });
 
         jQuery(document).ready(function() {
