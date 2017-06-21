@@ -72,8 +72,8 @@ selfoss.ui = {
 
 
     entryStarr: function(id, starred, domNode) {
-        var button = $("#entry"+id+" .entry-starr, #entrr"+id+" .entry-starr",
-                       domNode);
+        var button = $("#entry" + id + " .entry-starr, #entrr" + id + " .entry-starr",
+            domNode);
 
         // update button
         if (starred) {
@@ -87,9 +87,9 @@ selfoss.ui = {
 
 
     entryMark: function(id, unread, domNode) {
-        var button = $("#entry"+id+" .entry-unread, #entrr"+id+" .entry-unread",
-                       domNode);
-        var parent = $("#entry"+id+", #entrr"+id, domNode);
+        var button = $("#entry" + id + " .entry-unread, #entrr" + id + " .entry-unread",
+            domNode);
+        var parent = $("#entry" + id + ", #entrr" + id, domNode);
 
         // update button and entry style
         if (unread) {
@@ -148,7 +148,7 @@ selfoss.ui = {
 
 
     beforeReloadList: function(clear) {
-        var clear = (typeof clear !== 'undefined') ? clear : true;
+        clear = (typeof clear !== 'undefined') ? clear : true;
 
         var content = $('#content');
 
@@ -161,7 +161,7 @@ selfoss.ui = {
 
 
     afterReloadList: function(cleared) {
-        var cleared = (typeof cleared !== 'undefined') ? cleared : true;
+        cleared = (typeof cleared !== 'undefined') ? cleared : true;
 
         $('#content').removeClass('loading');
 
@@ -359,12 +359,13 @@ selfoss.ui = {
 
 
     refreshTagSourceUnread: function(tagCounts, sourceCounts, diff) {
-        var diff = (typeof diff !== 'undefined') ? diff : true;
+        diff = (typeof diff !== 'undefined') ? diff : true;
 
         tagCounts.forEach(function(tagCount) {
             var tagsCountEl = $('#nav-tags > li > span.tag')
-                .filter(function(i){
-                    return $(this).html() == tagCount.tag; }
+                .filter(function(){
+                    return $(this).html() == tagCount.tag;
+                }
                 ).next();
 
             var unreadCount = 0;

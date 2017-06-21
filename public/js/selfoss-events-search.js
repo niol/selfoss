@@ -44,8 +44,8 @@ selfoss.events.search = function() {
         selfoss.filter.search = term;
         selfoss.events.setHash();
         selfoss.db.reloadList();
-        
-        if(term=="")
+
+        if (term == "")
             $('#search-list').hide();
         } else {
             $('#search-list').show();

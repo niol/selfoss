@@ -185,11 +185,11 @@ selfoss.events = {
             selfoss.filterReset();
 
             $('#nav-filter > li').removeClass('active');
-            $('#nav-filter-'+selfoss.events.section).addClass('active');
+            $('#nav-filter-' + selfoss.events.section).addClass('active');
 
             selfoss.db.reloadList();
-        } else if(hash=="sources") { // load sources
-            if( selfoss.events.subsection ) {
+        } else if (hash == "sources") { // load sources
+            if (selfoss.events.subsection) {
                 selfoss.ui.showError('Invalid subsection: '
                                      + selfoss.events.subsection);
                 done();
@@ -213,8 +213,8 @@ selfoss.events = {
                     if (textStatus == 'abort') {
                         return;
                     else if (errorThrown)
-                        selfoss.ui.showError('Load sources list error: '+
-                                             textStatus+' '+errorThrown);
+                        selfoss.ui.showError('Load sources list error: ' +
+                                             textStatus + ' ' + errorThrown);
                 },
                 complete: function() {
                     $('#content').removeClass('loading');

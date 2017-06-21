@@ -81,7 +81,7 @@ selfoss.events.entriesToolbar = function(parent) {
             // update statistics in main menue
             var updateStats = function(starr) {
                 var starred = parseInt($('.nav-filter-starred span.count').html());
-                if(starr) {
+                if (starr) {
                     starred++;
                 } else {
                     starred--;
@@ -89,7 +89,7 @@ selfoss.events.entriesToolbar = function(parent) {
                 $('.nav-filter-starred span').html(starred);
             };
             updateStats(starr);
-            
+
             if (selfoss.db.storage)
                 selfoss.dbOffline.entryStarr(id, starr);
 
@@ -107,8 +107,8 @@ selfoss.events.entriesToolbar = function(parent) {
                         // rollback ui changes
                         selfoss.ui.entryStarr(id, !starr);
                         updateStats(!starr);
-                        selfoss.ui.showError('Can not star/unstar item: '+
-                                            textStatus+' '+errorThrown);
+                        selfoss.ui.showError('Can not star/unstar item: ' +
+                                            textStatus + ' ' + errorThrown);
                     });
                 }
             });
@@ -128,13 +128,13 @@ selfoss.events.entriesToolbar = function(parent) {
             var updateStats = function(unread) {
                 // update all unread counters
                 var unreadstats = parseInt($('.nav-filter-unread span.count').html());
-                var diff = unread? -1 : 1;
+                var diff = unread ? -1 : 1;
 
                 selfoss.refreshUnread(unreadstats + diff);
 
                 // update unread on tags and sources
                 var entryTags = [];
-                $('#entry'+id+' .entry-tags-tag').each(function(index) {
+                $('#entry' + id + ' .entry-tags-tag').each(function() {
                     entryTags.push({tag: $(this).html(), count: diff});
                 });
                 selfoss.ui.refreshTagSourceUnread(
@@ -161,8 +161,8 @@ selfoss.events.entriesToolbar = function(parent) {
                         // rollback ui changes
                         selfoss.ui.entryMark(id, unread);
                         updateStats(!unread);
-                        selfoss.ui.showError('Can not mark/unmark item: '+
-                                            textStatus+' '+errorThrown);
+                        selfoss.ui.showError('Can not mark/unmark item: ' +
+                                            textStatus + ' ' + errorThrown);
                     });
                 }
             });

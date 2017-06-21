@@ -82,12 +82,12 @@ var selfoss = {
 
             // init offline if supported and events
             selfoss.dbOffline.init().catch(selfoss.events.init);
-            
+
             // init shortcut handler
             selfoss.shortcuts.init();
 
             // setup periodic server status sync
-            window.setInterval(selfoss.db.sync, 60*1000);
+            window.setInterval(selfoss.db.sync, 60 * 1000);
 
             window.setInterval(selfoss.ui.refreshEntryDatetimes, 60 * 1000);
 
@@ -469,8 +469,8 @@ var selfoss = {
 
         if (ids.length === 0 && selfoss.filter.type == 'unread') {
             $('.entry').remove();
-            if( selfoss.filter.type == 'unread' &&
-                parseInt($('span.unread-count').html()) > 0 )
+            if (selfoss.filter.type == 'unread' &&
+                parseInt($('span.unread-count').html()) > 0)
                 selfoss.db.reloadList();
             else
                 selfoss.ui.refreshStreamButtons(true);
@@ -487,10 +487,10 @@ var selfoss = {
             if (!displayed) {
                 displayed = true;
                 var unreadstats = parseInt($('.nav-filter-unread span.count')
-                                           .html()) - ids.length;
+                    .html()) - ids.length;
                 selfoss.refreshUnread(unreadstats);
                 selfoss.ui.refreshTagSourceUnread(tagUnreadDiff,
-                                                  sourceUnreadDiff);
+                    sourceUnreadDiff);
 
                 if (selfoss.isSmartphone() && $('#nav').is(':visible') == true)
                     $('#nav-mobile-settings').click();
@@ -509,18 +509,18 @@ var selfoss = {
             data: {
                 ids: ids
             },
-            success: function(response) {
+            success: function() {
                 selfoss.db.setOnline();
                 displayNextUnread();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 selfoss.db.setOffline().then(function() {
-                    statuses = [];
+                    var statuses = [];
                     ids.forEach(function(id) {
                         statuses.push({
                             entryId: id,
-                            name:    'unread',
-                            value:   false
+                            name: 'unread',
+                            value: false
                         });
                     });
                     selfoss.dbOffline.enqueueStatuses(statuses);
@@ -529,8 +529,8 @@ var selfoss = {
                     selfoss.ui.refreshStreamButtons(true, true, hadMore);
                     $('#content').removeClass('loading');
                     selfoss.events.entries();
-                    selfoss.ui.showError('Can not mark all visible item: '+
-                                         textStatus+' '+errorThrown);
+                    selfoss.ui.showError('Can not mark all visible item: ' +
+                                         textStatus + ' ' + errorThrown);
                 });
             }
         });
