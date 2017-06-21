@@ -156,6 +156,8 @@ var selfoss = {
                     selfoss.ui.login();
                     selfoss.ui.showMainUi();
                     selfoss.initUi();
+                    if (!selfoss.db.storage)
+                        selfoss.dbOffline.init().catch(selfoss.events.init);
                     selfoss.events.initHash();
                 } else {
                     selfoss.events.setHash('login', false);
@@ -459,6 +461,10 @@ var selfoss = {
             }
         });
 
+        // close opened entry and list
+        selfoss.events.setHash();
+        selfoss.filterReset();
+
         if (ids.length === 0 && selfoss.filter.type == 'unread') {
             $('.entry').remove();
             if( selfoss.filter.type == 'unread' &&
@@ -473,10 +479,6 @@ var selfoss = {
         var content = $('#content');
         var articleList = content.html();
         var hadMore = $('.stream-more').is(':visible');
-
-        // close opened entry and list
-        selfoss.events.setHash();
-        selfoss.filterReset();
 
         var displayed = false;
         var displayNextUnread = function() {

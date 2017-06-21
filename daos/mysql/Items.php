@@ -629,7 +629,7 @@ class Items extends Database {
         $sql = [];
         foreach ($statuses as $status) {
             if (array_key_exists('id', $status)) {
-                $id = intval($status['id']);
+                $id = (int) $status['id'];
                 if ($id > 0) {
                     $statusUpdate = null;
 
@@ -658,12 +658,12 @@ class Items extends Database {
                     }
 
                     if ($statusUpdate !== null && $updateDate) {
+                        $sk = $statusUpdate['sk'];
                         if (array_key_exists($id, $sql)) {
                             // merge status updates for the same entry and
                             // ensure all saved status updates have been made
                             // after the last server update for this entry.
-                            if (!array_key_exists($statusUpdate['sk'],
-                                                  $sql[$id]['updates'])
+                            if (!array_key_exists($sk, $sql[$id]['updates'])
                                 || $updateDate > $sql['id']['datetime']) {
                                 $sql[$id]['updates'][$sk] = $statusUpdate['sql'];
                             }
@@ -673,7 +673,7 @@ class Items extends Database {
                         } else {
                             // create new status update
                             $sql[$id] = [
-                                'updates' => [$sq => $statusUpdate['sql']],
+                                'updates' => [$sk => $statusUpdate['sql']],
                                 'datetime' => $updateDate->format(\DateTime::ATOM)
                             ];
                         }

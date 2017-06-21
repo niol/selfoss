@@ -232,9 +232,8 @@ selfoss.events.navigation = function() {
             if (!selfoss.db.online)
                 return;
 
-            selfoss.db.clear().then(function() {
-                window.location.href = $('base').attr('href')+"?logout=1";
-            });
+            selfoss.db.clear();
+            selfoss.logout();
         });
     }
 };

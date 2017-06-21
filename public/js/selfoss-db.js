@@ -86,12 +86,6 @@ selfoss.dbOnline = {
 
                 var dataDate = new Date(data.lastUpdate);
 
-                if( dataDate <= selfoss.db.lastUpdate
-                    && !selfoss.dbOffline.newerEntriesMissing) {
-                    selfoss.dbOnline._syncDone();
-                    return;
-                }
-
                 var storing = false;
 
                 if (selfoss.db.storage) {
@@ -444,6 +438,8 @@ selfoss.dbOffline = {
                 fromDatetime = new Date(fromDatetime);
             }
             var isMore = false;
+            var alwaysInDb = selfoss.filter.type == 'starred'
+                             || selfoss.filter.type == 'unread';
 
             entries.filter(function(entry) {
                 if ($.inArray(entry.id, selfoss.filter.extraIds) > -1) {
@@ -478,7 +474,7 @@ selfoss.dbOffline = {
                     }
                 }
 
-                if (seek && !ascOrder
+                if (seek && !ascOrder && !alwaysInDb
                     && entry.datetime < selfoss.dbOffline.newestGCedEntry) {
                     // the offline db is missing older entries, the next seek
                     // will have to find them online.
@@ -552,6 +548,8 @@ selfoss.dbOffline = {
 
 
     enqueueStatuses: function(statuses) {
+        if (statuses) selfoss.dbOffline.needsSync = true;
+
         return selfoss.dbOffline._tr('rw', selfoss.db.storage.statusq,
                                      function() {
             statuses.forEach(function(newStatus) {
@@ -638,7 +636,6 @@ selfoss.dbOffline = {
                 }, function() {
                     // the key was not found, the status of an entry missing
                     // in db was updated, request sync.
-                    console.log('entry ', id, ' not found in db, request sync to find it online (', newStatus);
                     selfoss.dbOffline.needsSync = true;
                 });
             });
@@ -696,10 +693,8 @@ selfoss.db = {
     lastUpdate: null,
 
 
-    setOnline: function(init) {
-        var init = (typeof init !== 'undefined') ? init : false;
-
-        if (!selfoss.db.online || init) {
+    setOnline: function() {
+        if (!selfoss.db.online) {
             selfoss.db.online = true;
             selfoss.reloadTags();
             selfoss.ui.setOnline();
@@ -728,7 +723,10 @@ selfoss.db = {
 
     clear: function() {
         if (selfoss.db.storage) {
-            return selfoss.db.storage.delete();
+            Cookies.remove('offlineDays', {path: window.location.pathname});
+            var clearing = selfoss.db.storage.delete();
+            selfoss.db.storage = false;
+            return clearing;
         } else {
             d = $.Deferred();
             d.resolve();
