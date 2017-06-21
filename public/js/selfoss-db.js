@@ -298,9 +298,8 @@ selfoss.dbOffline = {
             }).then(function() {
                 $(window).bind('online', selfoss.db.tryOnline);
                 $(window).bind('offline', selfoss.db.setOffline);
-                selfoss.db.setOnline(true);
                 $('#content').addClass('loading');
-                selfoss.db.tryOnline().then(selfoss.events.init);
+                selfoss.db.tryOnline().always(selfoss.events.init);
                 selfoss.dbOffline.reloadOnlineStats();
                 selfoss.dbOffline.refreshStats();
 
