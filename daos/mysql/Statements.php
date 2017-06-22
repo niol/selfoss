@@ -165,8 +165,12 @@ class Statements {
                         case \daos\PARAM_CSV:
                             $value = explode(',', $row[$columnIndex]);
                             break;
+                        default:
+                            $value = null;
                     }
-                    $rows[$rowIndex][$columnIndex] = $value;
+                    if ($value !== null) {
+                        $rows[$rowIndex][$columnIndex] = $value;
+                    }
                 }
             }
         }
