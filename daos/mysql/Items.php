@@ -383,10 +383,10 @@ class Items extends Database {
         ];
 
         return $this->stmt->ensureRowTypes(\F3::get('db')->exec($query, $params), [
-            'id' => \PDO::PARAM_INT,
-            'unread' => \PDO::PARAM_BOOL,
-            'starred' => \PDO::PARAM_BOOL,
-            'source' => \PDO::PARAM_INT
+            'id' => \daos\PARAM_INT,
+            'unread' => \daos\PARAM_BOOL,
+            'starred' => \daos\PARAM_BOOL,
+            'source' => \daos\PARAM_INT
         ]);
     }
 
@@ -402,7 +402,7 @@ class Items extends Database {
                  WHERE ' . $this->stmt->isTrue('unread') .
                     ' OR ' . $this->stmt->isTrue('starred') .
                 ' ORDER BY id LIMIT 1'),
-            ['id' => \PDO::PARAM_INT]
+            ['id' => \daos\PARAM_INT]
         );
         if ($lowest) {
             return $lowest[0]['id'];
@@ -421,7 +421,7 @@ class Items extends Database {
             \F3::get('db')->exec(
                 'SELECT id FROM ' . \F3::get('db_prefix') . 'items AS items
                  ORDER BY id DESC LIMIT 1'),
-            ['id' => \PDO::PARAM_INT]
+            ['id' => \daos\PARAM_INT]
         );
         if ($lastId) {
             return $lastId[0]['id'];

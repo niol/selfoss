@@ -101,7 +101,7 @@ selfoss.events.entriesToolbar = function(parent) {
                     selfoss.db.setOnline();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    selfoss.db.setOffline().then(function() {
+                    selfoss.handleAjaxError(jqXHR.status).then(function() {
                         selfoss.dbOffline.enqueueStatus(id, 'starred', starr);
                     }, function() {
                         // rollback ui changes
@@ -155,7 +155,7 @@ selfoss.events.entriesToolbar = function(parent) {
                     selfoss.db.setOnline();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    selfoss.db.setOffline().then(function() {
+                    selfoss.handleAjaxError(jqXHR.status).then(function() {
                         selfoss.dbOffline.enqueueStatus(id, 'unread', !unread);
                     }, function() {
                         // rollback ui changes

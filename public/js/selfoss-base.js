@@ -514,7 +514,7 @@ var selfoss = {
                 displayNextUnread();
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                selfoss.db.setOffline().then(function() {
+                selfoss.handleAjaxError(jqXHR.status).then(function() {
                     var statuses = [];
                     ids.forEach(function(id) {
                         statuses.push({
@@ -534,6 +534,26 @@ var selfoss = {
                 });
             }
         });
+    },
+
+
+    handleAjaxError: function(httpCode, tryOffline) {
+        tryOffline = (typeof tryOffline !== 'undefined') ? tryOffline : true;
+
+        if (tryOffline && httpCode == 0) {
+            // This means the server could not be reached so we try offline.
+            return selfoss.db.setOffline();
+        } else {
+            var handled  = $.Deferred();
+            if (httpCode == 403) {
+                selfoss.ui.logout();
+                selfoss.ui.showLogin('Logged out by server.');
+                handled.resolve();
+            } else {
+                handled.reject();
+            }
+            return handled;
+        }
     }
 
 };
