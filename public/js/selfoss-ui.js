@@ -412,7 +412,10 @@ selfoss.ui = {
     refreshOfflineCounts: function(offlineCounts) {
         for (var ck in offlineCounts) {
             if (offlineCounts.hasOwnProperty(ck)) {
-                var widget = $('#nav-filter-' + ck);
+                var selector = '#nav-filter-' + ck;
+                if (ck == 'unread')
+                    selector = selector + ', #nav-mobile-count';
+                var widget = $(selector);
                 var offlineWidget = $('span.offline-count', widget);
                 offlineWidget.html(offlineCounts[ck]);
 

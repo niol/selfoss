@@ -260,7 +260,8 @@ selfoss.dbOffline = {
     _tr: function() {
         return selfoss.db.storage.transaction.apply(null, arguments)
             .catch(Dexie.AbortError, function(error) {
-                console.error('abort error', error);
+                selfoss.ui.showError('Offline storage error: ' + error.message + 'Reloading may help. Disabling offline for now.');
+                selfoss.db.storage = false;
             }
             );
     },
@@ -392,7 +393,6 @@ selfoss.dbOffline = {
                                 }
                             }
                             ).then(function () {
-                                console.log('newestGCed entry after cleanup: ', selfoss.dbOffline.newestGCedEntry);
                                 selfoss.db.storage.stamps.bulkPut([
                                     {name: 'lastCleanup', datetime: new Date()},
                                     {name: 'newestGCedEntry',

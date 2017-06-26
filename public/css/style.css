@@ -166,18 +166,20 @@ body * {
             background-color: #187fff;
         }
 
-        #nav-filter span.offline-count {
+        #nav-filter span.offline-count,
+        #nav-mobile-count span.offline-count {
             display: none;
             color: #187fff;
         }
 
-        #nav-filter span.offline-count::after {
+        span.offline-count::after {
             content: " / ";
             color: #187fff;
         }
 
         #nav-filter span.offline-count.offline,
-        #nav-filter span.offline-count.diff {
+        #nav-filter span.offline-count.diff,
+        #nav-mobile-count span.offline-count.diff {
             display: inline;
         }
 
@@ -1218,10 +1220,12 @@ body.authenabled.loggedin #nav-logout {
             background-size:96px 40px;
         }
 
-        #nav-mobile-logo span {
+        #nav-mobile-count span {
             color: white;
+            font-size:0.6em !important;
+            font-weight: normal;
             position: relative;
-            left: 90px;
+            left: 95px;
             top: 5px;
             display: none;
         }
