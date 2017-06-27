@@ -6,7 +6,8 @@
     "jquery-mousewheel": "^3.1.13",
     "js-cookie": "^2.1.4",
     "malihu-custom-scrollbar-plugin": "^3.1.5",
-    "spectrum-colorpicker": "^1.8.0"
+    "spectrum-colorpicker": "^1.8.0",
+    "dexie": "^1.5.1"
   },
   "extra": {
     "requiredFiles": {
@@ -25,6 +26,7 @@
         "public/node_modules/js-cookie/src/js.cookie.js",
         "public/node_modules/spectrum-colorpicker/spectrum.js",
         "public/node_modules/jquery-hotkeys/jquery-hotkeys.js",
+        "public/node_modules/dexie/dist/dexie.js",
         "public/js/selfoss-base.js",
         "public/js/selfoss-shares.js",
         "public/js/selfoss-db.js",

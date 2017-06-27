@@ -31,16 +31,6 @@ var selfoss = {
     activeAjaxReq: null,
 
     /**
-     * last stats update
-     */
-    lastSync: Date.now(),
-
-    /**
-     * last db timestamp known client side
-     */
-    lastUpdate: null,
-
-    /**
      * the html title configured
      */
     htmlTitle: 'selfoss',
@@ -49,6 +39,14 @@ var selfoss = {
      * initialize application
      */
     init: function() {
+        window.applicationCache.addEventListener('updateready', function() {
+            selfoss.ui.showMessage('selfoss has been updated, please reload',
+                'Reload',
+                function() {
+                    location.reload();
+                });
+        });
+
         jQuery(document).ready(function() {
             if (selfoss.hasSession() || !$('body').hasClass('authenabled')) {
                 selfoss.ui.login();
@@ -82,17 +80,14 @@ var selfoss = {
             // init shares
             selfoss.shares.init($('#config').data('share'));
 
-            // init events
-            selfoss.events.init();
-
-            // init FancyBox
-            selfoss.initFancyBox();
+            // init offline if supported and events
+            selfoss.dbOffline.init().catch(selfoss.events.init);
 
             // init shortcut handler
             selfoss.shortcuts.init();
 
-            // setup periodic stats reloader
-            window.setInterval(selfoss.dbOnline.sync, 60 * 1000);
+            // setup periodic server status sync
+            window.setInterval(selfoss.db.sync, 60 * 1000);
 
             window.setInterval(selfoss.ui.refreshEntryDatetimes, 60 * 1000);
 
@@ -163,6 +158,9 @@ var selfoss = {
                     selfoss.ui.login();
                     selfoss.ui.showMainUi();
                     selfoss.initUi();
+                    if (!selfoss.db.storage) {
+                        selfoss.dbOffline.init().catch(selfoss.events.init);
+                    }
                     selfoss.events.initHash();
                 } else {
                     selfoss.events.setHash('login', false);
@@ -275,8 +273,8 @@ var selfoss = {
      * @param new starred stats
      */
     refreshStats: function(all, unread, starred) {
-        $('.nav-filter-newest span').html(all);
-        $('.nav-filter-starred span').html(starred);
+        $('.nav-filter-newest span.count').html(all);
+        $('.nav-filter-starred span.count').html(starred);
 
         selfoss.refreshUnread(unread);
     },
@@ -308,12 +306,12 @@ var selfoss = {
      */
     reloadTags: function() {
         $('#nav-tags').addClass('loading');
-        $('#nav-tags li:not(:first)').remove();
 
         $.ajax({
             url: $('base').attr('href') + 'tagslist',
             type: 'GET',
             success: function(data) {
+                $('#nav-tags li:not(:first)').remove();
                 $('#nav-tags').append(data);
                 selfoss.events.navigation();
             },
@@ -435,31 +433,81 @@ var selfoss = {
      */
     markVisibleRead: function() {
         var ids = [];
+        var tagUnreadDiff = [];
+        var sourceUnreadDiff = [];
+        var found = false;
         $('.entry.unread').each(function(index, item) {
             ids.push($(item).attr('id').substr(5));
+
+            $('.entry-tags-tag', item).each(function(index, tagEl) {
+                found = false;
+                var tag = $(tagEl).html();
+                tagUnreadDiff.forEach(function(tagCount) {
+                    if (tagCount.tag == tag) {
+                        found = true;
+                        tagCount.count = tagCount.count - 1;
+                    }
+                });
+                if (!found) {
+                    tagUnreadDiff.push({tag: tag, count: -1});
+                }
+            });
+
+            if (selfoss.sourcesNavLoaded) {
+                found = false;
+                var source = $(item).data('entry-source');
+                sourceUnreadDiff.forEach(function(sourceCount) {
+                    if (sourceCount.source == source) {
+                        found = true;
+                        sourceCount.count = sourceCount.count - 1;
+                    }
+                });
+                if (!found) {
+                    sourceUnreadDiff.push({source: source, count: -1});
+                }
+            }
         });
 
-        if (ids.length === 0) {
+        // close opened entry and list
+        selfoss.events.setHash();
+        selfoss.filterReset();
+
+        if (ids.length === 0 && selfoss.filter.type == 'unread') {
             $('.entry').remove();
             if (selfoss.filter.type == 'unread' &&
                 parseInt($('span.unread-count').html()) > 0) {
-                selfoss.dbOnline.reloadList();
+                selfoss.db.reloadList();
             } else {
                 selfoss.ui.refreshStreamButtons(true);
             }
             return;
         }
 
-        // show loading
         var content = $('#content');
         var articleList = content.html();
-        $('#content').addClass('loading').html('');
         var hadMore = $('.stream-more').is(':visible');
-        selfoss.ui.refreshStreamButtons();
 
-        // close opened entry and list
-        selfoss.events.setHash();
-        selfoss.filterReset();
+        var displayed = false;
+        var displayNextUnread = function() {
+            if (!displayed) {
+                displayed = true;
+                var unreadstats = parseInt($('.nav-filter-unread span.count')
+                    .html()) - ids.length;
+                selfoss.refreshUnread(unreadstats);
+                selfoss.ui.refreshTagSourceUnread(tagUnreadDiff,
+                    sourceUnreadDiff);
+
+                if (selfoss.isSmartphone() && $('#nav').is(':visible') == true) {
+                    $('#nav-mobile-settings').click();
+                }
+
+                selfoss.db.reloadList(false, false);
+            }
+        };
+
+        if (selfoss.db.storage) {
+            selfoss.dbOffline.entriesMark(ids, false).then(displayNextUnread);
+        }
 
         $.ajax({
             url: $('base').attr('href') + 'mark',
@@ -469,29 +517,50 @@ var selfoss = {
                 ids: ids
             },
             success: function() {
-                $('.entry').removeClass('unread');
-
-                // update unread stats
-                var unreadstats = parseInt($('.nav-filter-unread span').html()) - ids.length;
-                selfoss.refreshUnread(unreadstats);
-
-                // hide nav on smartphone if visible
-                if (selfoss.isSmartphone() && $('#nav').is(':visible') == true) {
-                    $('#nav-mobile-settings').click();
-                }
-
-                // refresh list
-                selfoss.dbOnline.reloadList();
+                selfoss.db.setOnline();
+                displayNextUnread();
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                content.html(articleList);
-                $('#content').removeClass('loading');
-                selfoss.ui.refreshStreamButtons(true, true, hadMore);
-                selfoss.events.entries();
-                selfoss.ui.showError('Can not mark all visible item: ' +
-                                     textStatus + ' ' + errorThrown);
+                selfoss.handleAjaxError(jqXHR.status).then(function() {
+                    var statuses = [];
+                    ids.forEach(function(id) {
+                        statuses.push({
+                            entryId: id,
+                            name: 'unread',
+                            value: false
+                        });
+                    });
+                    selfoss.dbOffline.enqueueStatuses(statuses);
+                }, function() {
+                    content.html(articleList);
+                    selfoss.ui.refreshStreamButtons(true, true, hadMore);
+                    $('#content').removeClass('loading');
+                    selfoss.events.entries();
+                    selfoss.ui.showError('Can not mark all visible item: ' +
+                                         textStatus + ' ' + errorThrown);
+                });
             }
         });
+    },
+
+
+    handleAjaxError: function(httpCode, tryOffline) {
+        tryOffline = (typeof tryOffline !== 'undefined') ? tryOffline : true;
+
+        if (tryOffline && httpCode == 0) {
+            // This means the server could not be reached so we try offline.
+            return selfoss.db.setOffline();
+        } else {
+            var handled  = $.Deferred();
+            if (httpCode == 403) {
+                selfoss.ui.logout();
+                selfoss.ui.showLogin('Logged out by server.');
+                handled.resolve();
+            } else {
+                handled.reject();
+            }
+            return handled;
+        }
     }
 
 };

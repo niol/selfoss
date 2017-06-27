@@ -40,6 +40,7 @@ $f3->route('GET /logout', 'controllers\Index->logout'); // json
 $f3->route('GET /update', 'controllers\Index->update'); // text
 $f3->route('GET /badge', 'controllers\Index->badge'); // xml
 $f3->route('GET /win8notifs', 'controllers\Index->win8Notifications'); // xml
+$f3->route('GET /selfoss.appcache', 'controllers\Index->appCacheManifest'); // text
 
 // only for loggedin users or on public mode
 $f3->route('GET /rss', 'controllers\Rss->rss'); // rss
@@ -57,6 +58,7 @@ $f3->route('POST /mark', 'controllers\Items->mark'); // json
 $f3->route('POST /unmark/@item', 'controllers\Items->unmark'); // json
 $f3->route('POST /starr/@item', 'controllers\Items->starr'); // json
 $f3->route('POST /unstarr/@item', 'controllers\Items->unstarr'); // json
+$f3->route('POST /items/sync', 'controllers\Items->updateStatuses'); // json
 
 $f3->route('GET /source/params', 'controllers\Sources->params'); // html
 $f3->route('GET /sources', 'controllers\Sources->show'); // html
