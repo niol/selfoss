@@ -25,9 +25,9 @@ selfoss.dbOnline = {
         success = (typeof success !== 'undefined') ? success : true;
 
         if (selfoss.dbOnline.syncing) {
-            if (success)
+            if (success) {
                 selfoss.dbOnline.syncing.resolve();
-            else {
+            } else {
                 selfoss.dbOnline.syncing.reject();
                 if (selfoss.dbOnline._syncRequest) {
                     selfoss.dbOnline._syncRequest.abort();
@@ -50,7 +50,9 @@ selfoss.dbOnline = {
                 var d = $.Deferred();
                 d.reject();
                 return d;
-            } else return selfoss.dbOnline.syncing;
+            } else {
+                return selfoss.dbOnline.syncing;
+            }
         }
 
         var syncing = selfoss.dbOnline._syncBegin();
@@ -61,8 +63,9 @@ selfoss.dbOnline = {
             getStatuses = undefined;
         }
 
-        if (updatedStatuses && updatedStatuses.length < 1)
+        if (updatedStatuses && updatedStatuses.length < 1) {
             updatedStatuses = undefined;
+        }
 
         selfoss.dbOnline._syncRequest = $.ajax({
             url: 'items/sync',
@@ -101,18 +104,19 @@ selfoss.dbOnline = {
                         storing = selfoss.dbOffline.newerEntriesMissing;
 
                         selfoss.dbOffline.storeEntries(data.newItems)
-                            .then(function () {
+                            .then(function() {
                                 selfoss.dbOffline.storeLastUpdate(dataDate);
 
                                 selfoss.dbOnline._syncDone();
 
                                 // fetch more if server has more
-                                if (selfoss.dbOffline.newerEntriesMissing)
+                                if (selfoss.dbOffline.newerEntriesMissing) {
                                     selfoss.dbOnline.sync();
+                                }
                             });
                     }
 
-                    if ('itemUpdates' in data)
+                    if ('itemUpdates' in data) {
                         // refresh entry statuses in db but do not calculate
                         // stats as they are taken directly from the server as
                         // provided
@@ -120,23 +124,27 @@ selfoss.dbOnline = {
                             false)
                             .then(function() {
                                 selfoss.dbOffline.storeLastUpdate(dataDate);
-                            }
-                            );
+                            });
+                    }
 
-                    if ('stats' in data)
+                    if ('stats' in data) {
                         selfoss.dbOffline.storeStats(data.stats);
+                    }
                 }
 
-                if ('stats' in data)
+                if ('stats' in data) {
                     selfoss.refreshStats(data.stats.total,
                         data.stats.unread,
                         data.stats.starred);
+                }
 
-                if ('tagshtml' in data)
+                if ('tagshtml' in data) {
                     selfoss.refreshTags(data.tagshtml);
+                }
 
-                if ('sourceshtml' in data)
+                if ('sourceshtml' in data) {
                     selfoss.refreshSources(data.sourceshtml);
+                }
 
                 if ('stats' in data && data.stats.unread > 0 &&
                     ($('.stream-empty').is(':visible') ||
@@ -148,15 +156,16 @@ selfoss.dbOnline = {
                     }
 
                     if ('stats' in data && selfoss.filter.type == 'unread' &&
-                        data.stats.unread > $('.entry.unread').length)
+                        data.stats.unread > $('.entry.unread').length) {
                         $('.stream-more').show();
                     }
                 }
 
                 selfoss.db.lastUpdate = dataDate;
 
-                if (!storing)
+                if (!storing) {
                     selfoss.dbOnline._syncDone();
+                }
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 selfoss.dbOnline._syncDone(false);
@@ -219,8 +228,9 @@ selfoss.dbOnline = {
             error: function(jqXHR, textStatus, errorThrown) {
                 if (textStatus == 'abort') {
                     return;
+                }
 
-                selfoss.handleAjaxError(jqXHR.status).then(function () {
+                selfoss.handleAjaxError(jqXHR.status).then(function() {
                     selfoss.dbOffline.reloadList();
                     selfoss.ui.afterReloadList();
                 }, function() {
@@ -297,8 +307,9 @@ selfoss.dbOffline = {
                     });
                 }).then(function() {
                 var offlineDays = Cookies.get('offlineDays');
-                if (offlineDays !== undefined)
+                if (offlineDays !== undefined) {
                     selfoss.dbOffline.offlineDays = parseInt(offlineDays);
+                }
                 selfoss.dbOffline.newestGCedEntry = new Date(Math.max(
                     selfoss.dbOffline.newestGCedEntry,
                     Date.now() - (selfoss.dbOffline.offlineDays * 86400000)
@@ -392,11 +403,13 @@ selfoss.dbOffline = {
                                     selfoss.dbOffline.newestGCedEntry = entry.datetime;
                                 }
                             }
-                            ).then(function () {
+                            ).then(function() {
                                 selfoss.db.storage.stamps.bulkPut([
                                     {name: 'lastCleanup', datetime: new Date()},
-                                    {name: 'newestGCedEntry',
-                                        datetime: selfoss.dbOffline.newestGCedEntry}
+                                    {
+                                        name: 'newestGCedEntry',
+                                        datetime: selfoss.dbOffline.newestGCedEntry
+                                    }
                                 ]);
                             });
                     }
@@ -409,9 +422,12 @@ selfoss.dbOffline = {
         return selfoss.dbOffline._tr('rw', selfoss.db.storage.stats,
             function() {
                 for (var stat in stats) {
-                    if (stats.hasOwnProperty(stat))
-                        selfoss.db.storage.stats.put({name: stat,
-                            value: stats[stat]});
+                    if (stats.hasOwnProperty(stat)) {
+                        selfoss.db.storage.stats.put({
+                            name: stat,
+                            value: stats[stat]
+                        });
+                    }
                 }
             });
     },
@@ -420,9 +436,12 @@ selfoss.dbOffline = {
     storeLastUpdate: function(lastUpdate) {
         return selfoss.dbOffline._tr('rw', selfoss.db.storage.stamps,
             function() {
-                if (lastUpdate)
-                    selfoss.db.storage.stamps.put({name: 'lastItemsUpdate',
-                        datetime: lastUpdate});
+                if (lastUpdate) {
+                    selfoss.db.storage.stamps.put({
+                        name: 'lastItemsUpdate',
+                        datetime: lastUpdate
+                    });
+                }
             });
     },
 
@@ -514,10 +533,11 @@ selfoss.dbOffline = {
                         howMany = howMany + 1;
                     }
                 }).then(function() {
-                    if (seek)
+                    if (seek) {
                         content.append(newContent.children());
-                    else
+                    } else {
                         content.replaceWith(newContent);
+                    }
                     selfoss.ui.refreshStreamButtons(true, howMany > 0, hasMore);
                 });
             });
@@ -548,11 +568,13 @@ selfoss.dbOffline = {
                 // iterate over all the entries.
                 selfoss.db.storage.entries.each(function(entry) {
                     offlineCounts.newest = offlineCounts.newest + 1;
-                    if (entry.unread)
+                    if (entry.unread) {
                         offlineCounts.unread = offlineCounts.unread + 1;
-                    if (entry.starred)
+                    }
+                    if (entry.starred) {
                         offlineCounts.starred = offlineCounts.starred + 1;
-                }).then(function () {
+                    }
+                }).then(function() {
                     selfoss.ui.refreshOfflineCounts(offlineCounts);
                 });
             });
@@ -560,7 +582,9 @@ selfoss.dbOffline = {
 
 
     enqueueStatuses: function(statuses) {
-        if (statuses) selfoss.dbOffline.needsSync = true;
+        if (statuses) {
+            selfoss.dbOffline.needsSync = true;
+        }
 
         return selfoss.dbOffline._tr('rw', selfoss.db.storage.statusq,
             function() {
@@ -618,26 +642,29 @@ selfoss.dbOffline = {
             selfoss.db.storage.stats,
             function() {
                 var statsDiff = false;
-                if (updateStats)
+                if (updateStats) {
                     statsDiff = {};
+                }
 
                 // update entries statuses
                 itemStatuses.forEach(function(itemStatus) {
                     var newStatus = {};
 
-                    selfoss.db.entryStatusNames.forEach(function (statusName) {
+                    selfoss.db.entryStatusNames.forEach(function(statusName) {
                         if (statusName in itemStatus) {
                             newStatus[statusName] = itemStatus[statusName];
 
                             if (updateStats) {
-                                if (!(statusName in statsDiff))
+                                if (!(statusName in statsDiff)) {
                                     statsDiff[statusName] = 0;
-                                if (itemStatus[statusName])
+                                }
+                                if (itemStatus[statusName]) {
                                     statsDiff[statusName] = statsDiff[statusName]
                                                         + 1;
-                                else
+                                } else {
                                     statsDiff[statusName] = statsDiff[statusName]
                                                         - 1;
+                                }
                             }
                         }
                     });
@@ -670,7 +697,7 @@ selfoss.dbOffline = {
 
     entriesMark: function(itemIds, unread) {
         var newStatuses = [];
-        itemIds.forEach(function (itemId) {
+        itemIds.forEach(function(itemId) {
             newStatuses.push({id: itemId, unread: unread});
         });
         return selfoss.dbOffline.storeEntryStatuses(newStatuses);
@@ -683,8 +710,10 @@ selfoss.dbOffline = {
 
 
     entryStarr: function(itemId, starred) {
-        return selfoss.dbOffline.storeEntryStatuses([{id: itemId,
-            starred: starred}]);
+        return selfoss.dbOffline.storeEntryStatuses([{
+            id: itemId,
+            starred: starred
+        }]);
     }
 
 
@@ -787,10 +816,11 @@ selfoss.db = {
             return d; // ensure any chained function runs
         }
 
-        if (selfoss.db.storage)
+        if (selfoss.db.storage) {
             return selfoss.dbOffline.sendNewStatuses();
-        else
+        } else {
             return selfoss.dbOnline.sync();
+        }
     },
 
 
@@ -798,15 +828,17 @@ selfoss.db = {
         append = (typeof append !== 'undefined') ? append : false;
         waitForSync = (typeof waitForSync !== 'undefined') ? waitForSync : true;
 
-        if (location.hash == "#sources") {
+        if (location.hash == '#sources') {
             return;
         }
 
-        if (selfoss.events.entryId && selfoss.filter.fromId === undefined)
+        if (selfoss.events.entryId && selfoss.filter.fromId === undefined) {
             selfoss.filter.extraIds.push(selfoss.events.entryId);
+        }
 
-        if (!append || selfoss.filter.type != 'newest')
+        if (!append || selfoss.filter.type != 'newest') {
             selfoss.dbOffline.olderEntriesOnline = false;
+        }
 
         selfoss.ui.beforeReloadList(!append);
 
@@ -815,24 +847,27 @@ selfoss.db = {
 
             // tag, source and search filtering not supported offline (yet?)
             if (selfoss.filter.tag || selfoss.filter.source
-                || selfoss.filter.search)
+                || selfoss.filter.search) {
                 reloader = selfoss.dbOnline.reloadList;
+            }
 
             if (!selfoss.db.storage ||
                 (selfoss.db.online && (
                     selfoss.dbOffline.olderEntriesOnline ||
-                 selfoss.dbOffline.newerEntriesMissing)))
+                 selfoss.dbOffline.newerEntriesMissing))) {
                 reloader = selfoss.dbOnline.reloadList;
+            }
 
             reloader().then(function() {
                 selfoss.ui.afterReloadList(!append);
             });
         };
 
-        if (waitForSync && selfoss.dbOnline.syncing)
+        if (waitForSync && selfoss.dbOnline.syncing) {
             selfoss.dbOnline.syncing.then(reload);
-        else
+        } else {
             reload();
+        }
     }
 
 

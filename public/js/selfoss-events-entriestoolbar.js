@@ -90,8 +90,9 @@ selfoss.events.entriesToolbar = function(parent) {
             };
             updateStats(starr);
 
-            if (selfoss.db.storage)
+            if (selfoss.db.storage) {
                 selfoss.dbOffline.entryStarr(id, starr);
+            }
 
             $.ajax({
                 url: $('base').attr('href') + (starr ? 'starr/' : 'unstarr/') + id,
@@ -144,8 +145,9 @@ selfoss.events.entriesToolbar = function(parent) {
             };
             updateStats(unread);
 
-            if (selfoss.db.storage)
+            if (selfoss.db.storage) {
                 selfoss.dbOffline.entryMark(id, !unread);
+            }
 
             $.ajax({
                 url: $('base').attr('href') + (unread ? 'mark/' : 'unmark/') + id,

@@ -58,8 +58,9 @@ selfoss.ui = {
         $('.offlineable').addClass('offline');
         $('.offlineable').removeClass('online');
         $('#nav-tags li:not(:first)').remove();
-        if (!$('#nav-sources-title').hasClass("nav-sources-collapsed"))
+        if (!$('#nav-sources-title').hasClass('nav-sources-collapsed')) {
             $('#nav-sources-title').click();
+        }
         selfoss.events.navigation();
     },
 
@@ -72,7 +73,7 @@ selfoss.ui = {
 
 
     entryStarr: function(id, starred, domNode) {
-        var button = $("#entry" + id + " .entry-starr, #entrr" + id + " .entry-starr",
+        var button = $('#entry' + id + ' .entry-starr, #entrr' + id + ' .entry-starr',
             domNode);
 
         // update button
@@ -87,9 +88,9 @@ selfoss.ui = {
 
 
     entryMark: function(id, unread, domNode) {
-        var button = $("#entry" + id + " .entry-unread, #entrr" + id + " .entry-unread",
+        var button = $('#entry' + id + ' .entry-unread, #entrr' + id + ' .entry-unread',
             domNode);
-        var parent = $("#entry" + id + ", #entrr" + id, domNode);
+        var parent = $('#entry' + id + ', #entrr' + id, domNode);
 
         // update button and entry style
         if (unread) {
@@ -153,8 +154,9 @@ selfoss.ui = {
         var content = $('#content');
 
         content.addClass('loading');
-        if (clear)
-            content.html("");
+        if (clear) {
+            content.html('');
+        }
 
         $('#stream-buttons').hide();
     },
@@ -165,8 +167,9 @@ selfoss.ui = {
 
         $('#content').removeClass('loading');
 
-        if (cleared)
+        if (cleared) {
             $(document).scrollTop(0);
+        }
 
         $('#stream-buttons').show();
         selfoss.ui.refreshEntryDatetimes();
@@ -363,24 +366,26 @@ selfoss.ui = {
 
         tagCounts.forEach(function(tagCount) {
             var tagsCountEl = $('#nav-tags > li > span.tag')
-                .filter(function(){
+                .filter(function() {
                     return $(this).html() == tagCount.tag;
                 }
                 ).next();
 
             var unreadCount = 0;
             if (diff) {
-                if (tagsCountEl.html() != '')
+                if (tagsCountEl.html() != '') {
                     unreadCount = parseInt(tagsCountEl.html());
+                }
                 unreadCount = unreadCount + tagCount.count;
             } else {
                 unreadCount = tagCount.count;
             }
 
-            if (unreadCount > 0)
+            if (unreadCount > 0) {
                 tagsCountEl.html(unreadCount);
-            else
+            } else {
                 tagsCountEl.html('');
+            }
         });
 
         if (selfoss.sourcesNavLoaded) {
@@ -390,8 +395,9 @@ selfoss.ui = {
 
                 var unreadCount = 0;
                 if (diff) {
-                    if (sourcesCountEl.html() != '')
+                    if (sourcesCountEl.html() != '') {
                         unreadCount = parseInt(sourcesCountEl.html());
+                    }
                     unreadCount = unreadCount + sourceCount.count;
                 } else {
                     unreadCount = sourceCount.count;
@@ -413,17 +419,19 @@ selfoss.ui = {
         for (var ck in offlineCounts) {
             if (offlineCounts.hasOwnProperty(ck)) {
                 var selector = '#nav-filter-' + ck;
-                if (ck == 'unread')
+                if (ck == 'unread') {
                     selector = selector + ', #nav-mobile-count';
+                }
                 var widget = $(selector);
                 var offlineWidget = $('span.offline-count', widget);
                 offlineWidget.html(offlineCounts[ck]);
 
                 if (parseInt($('span.count', widget).html()) !=
-                    offlineCounts[ck])
+                    offlineCounts[ck]) {
                     offlineWidget.addClass('diff');
-                else
+                } else {
                     offlineWidget.removeClass('diff');
+                }
             }
         }
     }

@@ -146,7 +146,7 @@ selfoss.events.entries = function() {
     $('.stream-error').unbind('click').click(selfoss.db.reloadList);
 
     // more
-    $('.stream-more').unbind('click').click(function () {
+    $('.stream-more').unbind('click').click(function() {
         var lastEntry = $('.entry').not('.fullscreen').filter(':last');
         selfoss.events.setHash();
         selfoss.filter.extraIds.length = 0;
