@@ -287,12 +287,12 @@ var selfoss = {
      * @param new unread stats
      */
     refreshUnread: function(unread) {
-        $('span.unread-count').html(unread);
+        $('.unread-count .count').html(unread);
 
         if (unread > 0) {
-            $('span.unread-count').addClass('unread');
+            $('.unread-count').addClass('unread');
         } else {
-            $('span.unread-count').removeClass('unread');
+            $('.unread-count').removeClass('unread');
         }
 
         selfoss.ui.refreshTitle(unread);
@@ -487,25 +487,24 @@ var selfoss = {
         var articleList = content.html();
         var hadMore = $('.stream-more').is(':visible');
 
+        var unreadstats = parseInt($('.nav-filter-unread span.count').html()) -
+            ids.length;
         var displayed = false;
         var displayNextUnread = function() {
             if (!displayed) {
                 displayed = true;
-                var unreadstats = parseInt($('.nav-filter-unread span.count')
-                    .html()) - ids.length;
                 selfoss.refreshUnread(unreadstats);
                 selfoss.ui.refreshTagSourceUnread(tagUnreadDiff,
                     sourceUnreadDiff);
 
-                if (selfoss.isSmartphone() && $('#nav').is(':visible') == true) {
-                    $('#nav-mobile-settings').click();
-                }
+                selfoss.ui.hideMobileNav();
 
                 selfoss.db.reloadList(false, false);
             }
         };
 
         if (selfoss.db.storage) {
+            selfoss.refreshUnread(unreadstats);
             selfoss.dbOffline.entriesMark(ids, false).then(displayNextUnread);
         }
 
@@ -553,8 +552,8 @@ var selfoss = {
         } else {
             var handled  = $.Deferred();
             if (httpCode == 403) {
+                selfoss.ui.showError('Your session has expired');
                 selfoss.ui.logout();
-                selfoss.ui.showLogin('Logged out by server.');
                 handled.resolve();
             } else {
                 handled.reject();

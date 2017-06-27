@@ -107,7 +107,12 @@
     <div id="mainui">
         <!-- menu open for smartphone -->
         <div id="nav-mobile">
-            <div id="nav-mobile-logo"><span class="unread-count offlineable"></span></div>
+            <div id="nav-mobile-logo">
+                <div id="nav-mobile-count" class="unread-count offlineable">
+                    <span class="offline-count offlineable"></span>
+                    <span class="count"></span>
+                </div>
+            </div>
             <div id="nav-mobile-settings"></div>
         </div>
 
@@ -120,7 +125,12 @@
             <h2 id="nav-filter-title" class="nav-filter-expanded" tabindex="0" aria-haspopup="true" aria-expanded="true"><?= \F3::get('lang_filter') ?></h2>
             <ul id="nav-filter">
                 <li id="nav-filter-newest" class="nav-filter-newest" role="link" tabindex="0"><?= \F3::get('lang_newest')?> <span class="offline-count offlineable"></span><span class="count"></span></li>
-                <li id="nav-filter-unread" class="nav-filter-unread" role="link" tabindex="0"><?= \F3::get('lang_unread')?> <span class="unread-count count offlineable"></span></li>
+                <li id="nav-filter-unread" class="nav-filter-unread" role="link" tabindex="0"><?= \F3::get('lang_unread')?>
+                    <div class="unread-count offlineable">
+                        <span class="offline-count offlineable"></span>
+                        <span class="count"></span>
+                    </div>
+                </li>
                 <li id="nav-filter-starred" class="nav-filter-starred" role="link" tabindex="0"><?= \F3::get('lang_starred') ?> <span class="offline-count offlineable"></span><span class="count"></span></li>
             </ul>
             </div>

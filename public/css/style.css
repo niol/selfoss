@@ -144,43 +144,61 @@ body * {
             font-size:0.55em;
             color:#777;
         }
+
+        .unread-count {
+            display: inline;
+        }
+
+        #nav-mobile-count.unread-count {
+            display: none;
+        }
         
-        span.unread-count.unread {
+        .unread-count.unread {
             background-color: #E74C3C;
             border-radius: 30px;
             color: white !important;
             font-size:0.6em !important;
-            font-weight: normal;
-            min-width: 8px;
             padding: 0 5px 0 5px;
             margin-left: 5px;
             vertical-align:baseline !important;
             display: inline !important;
         }
 
-        span.unread-count.online::before {
+        .unread-count.unread span {
+            color: white !important;
+            font-weight: normal;
+            font-size:1em !important;
+        }
+
+        .unread-count.online span.count::before {
             content: "\2601\0000a0"; /* cloud and non breaking space */
         }
 
-        span.unread-count.unread.offline {
+        .unread-count.unread.offline {
             background-color: #187fff;
         }
 
-        #nav-filter span.offline-count,
-        #nav-mobile-count span.offline-count {
+        span.offline-count {
             display: none;
-            color: #187fff;
+            color: #187fff !important;
+        }
+
+        .unread-count span.offline-count {
+            color: white !important;
+        }
+
+        .unread-count.offline span.offline-count {
+            display: none !important;
         }
 
         span.offline-count::after {
             content: " / ";
-            color: #187fff;
+            color: #187fff !important;
         }
 
-        #nav-filter span.offline-count.offline,
-        #nav-filter span.offline-count.diff,
-        #nav-mobile-count span.offline-count.diff {
-            display: inline;
+        span.offline-count.offline,
+        span.offline-count.diff {
+            display: inline !important;
         }
 
     #nav h2 {
@@ -1220,14 +1238,12 @@ body.authenabled.loggedin #nav-logout {
             background-size:96px 40px;
         }
 
-        #nav-mobile-count span {
+        #nav-mobile-count {
             color: white;
-            font-size:0.6em !important;
             font-weight: normal;
             position: relative;
             left: 95px;
             top: 5px;
-            display: none;
         }
 
         #nav-mobile-settings {

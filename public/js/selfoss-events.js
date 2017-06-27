@@ -212,10 +212,12 @@ selfoss.events = {
                 error: function(jqXHR, textStatus, errorThrown) {
                     if (textStatus == 'abort') {
                         return;
-                    } else if (errorThrown) {
+                    }
+
+                    selfoss.handleAjaxError(jqXHR.status, false).fail(function() {
                         selfoss.ui.showError('Load sources list error: ' +
                                              textStatus + ' ' + errorThrown);
-                    }
+                    });
                 },
                 complete: function() {
                     $('#content').removeClass('loading');
