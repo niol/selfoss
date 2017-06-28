@@ -424,7 +424,12 @@ selfoss.ui = {
                 }
                 var widget = $(selector);
                 var offlineWidget = $('span.offline-count', widget);
-                offlineWidget.html(offlineCounts[ck]);
+
+                if (offlineCounts[ck] == 'keep') {
+                    offlineCounts[ck] = parseInt(offlineWidget.html());
+                } else {
+                    offlineWidget.html(offlineCounts[ck]);
+                }
 
                 if (parseInt($('span.count', widget).html()) !=
                     offlineCounts[ck]) {

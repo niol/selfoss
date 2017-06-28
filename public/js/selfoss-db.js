@@ -270,10 +270,17 @@ selfoss.dbOffline = {
     _tr: function() {
         return selfoss.db.storage.transaction.apply(null, arguments)
             .catch(Dexie.AbortError, function(error) {
-                selfoss.ui.showError('Offline storage error: ' + error.message + 'Reloading may help. Disabling offline for now.');
+                selfoss.ui.showError('Offline storage error: ' + error.message +
+                    '. Reloading may help. Disabling offline for now.');
                 selfoss.db.storage = false;
-            }
-            );
+                selfoss.db.reloadList();
+
+                // If this is a QuotaExceededError, garbage collect more
+                // entries and hope it helps. FIXME: Dexie 2 will make it
+                // possible to identify QuotaExceededError with
+                //     if (error.message == 'QuotaExceededError ')
+                selfoss.dbOffline.GCEntries(true);
+            });
     },
 
 
@@ -324,7 +331,10 @@ selfoss.dbOffline = {
 
                 $('#content').addClass('loading');
                 selfoss.db.tryOnline()
-                    .then(selfoss.reloadTags)
+                    .then(function() {
+                        selfoss.reloadTags();
+                        selfoss.ui.setOnline();
+                    })
                     .always(selfoss.events.init);
                 selfoss.dbOffline.reloadOnlineStats();
                 selfoss.dbOffline.refreshStats();
