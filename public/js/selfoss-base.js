@@ -475,7 +475,7 @@ var selfoss = {
         if (ids.length === 0 && selfoss.filter.type == 'unread') {
             $('.entry').remove();
             if (selfoss.filter.type == 'unread' &&
-                parseInt($('span.unread-count').html()) > 0) {
+                parseInt($('.unread-count .count').html()) > 0) {
                 selfoss.db.reloadList();
             } else {
                 selfoss.ui.refreshStreamButtons(true);

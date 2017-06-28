@@ -33,7 +33,7 @@ selfoss.ui = {
 
 
     refreshTitle: function(unread) {
-        unread = (typeof unread !== 'undefined') ? unread : parseInt($('span.unread-count').html());
+        unread = (typeof unread !== 'undefined') ? unread : parseInt($('.unread-count .count').html());
 
         if (unread > 0) {
             $(document).attr('title', selfoss.htmlTitle + ' (' + unread + ')');
