@@ -187,13 +187,13 @@ body * {
             color: white !important;
         }
 
-        .unread-count.offline span.offline-count {
-            display: none !important;
-        }
-
         span.offline-count::after {
             content: " / ";
             color: #187fff !important;
+        }
+
+        .unread-count span.offline-count::after {
+            color: white !important;
         }
 
         span.offline-count.offline,

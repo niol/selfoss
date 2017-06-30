@@ -874,7 +874,7 @@ selfoss.db = {
         };
 
         if (waitForSync && selfoss.dbOnline.syncing) {
-            selfoss.dbOnline.syncing.then(reload);
+            selfoss.dbOnline.syncing.always(reload);
         } else {
             reload();
         }
