@@ -12,6 +12,7 @@ selfoss.ui = {
         selfoss.ui.refreshTitle(0);
         $('#loginform .error').html(error);
         $('#username').focus();
+        $('#enableoffline').prop('checked', selfoss.db.enableOffline);
     },
 
 
