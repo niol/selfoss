@@ -196,7 +196,6 @@ body * {
             color: white !important;
         }
 
-        span.offline-count.offline,
         span.offline-count.diff {
             display: inline !important;
         }

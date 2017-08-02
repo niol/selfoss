@@ -554,6 +554,7 @@ var selfoss = {
             if (httpCode == 403) {
                 selfoss.ui.showError('Your session has expired');
                 selfoss.ui.logout();
+                selfoss.ui.showLogin('Your session has expired.');
                 handled.resolve();
             } else {
                 handled.reject();
