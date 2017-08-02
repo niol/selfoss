@@ -290,9 +290,9 @@ selfoss.dbOffline = {
 
     init: function() {
         if (!selfoss.db.enableOffline) {
-            return new Promise(function(resolve, reject) {
-                reject();
-            });
+            var d = $.Deferred();
+            d.reject();
+            return d;
         }
 
         selfoss.db.storage = new Dexie('selfoss');
