@@ -63,24 +63,28 @@ selfoss.dbOnline = {
             getStatuses = undefined;
         }
 
-        if (updatedStatuses && updatedStatuses.length < 1) {
-            updatedStatuses = undefined;
+        var syncParams = {
+            since: selfoss.db.lastUpdate.toISOString(),
+            tags: true,
+            sources: selfoss.filter.sourcesNav ? true : undefined,
+            itemsStatuses: getStatuses
+        };
+
+        if (updatedStatuses && updatedStatuses.length > 0) {
+            syncParams.updatedStatuses = updatedStatuses;
+        }
+
+        if (selfoss.db.storage) {
+            syncParams.itemsSinceId = selfoss.dbOffline.lastItemId;
+            syncParams.itemsNotBefore = selfoss.dbOffline.newestGCedEntry.toISOString();
+            syncParams.itemsHowMany = selfoss.filter.itemsPerPage;
         }
 
         selfoss.dbOnline._syncRequest = $.ajax({
             url: 'items/sync',
             type: updatedStatuses ? 'POST' : 'GET',
             dataType: 'json',
-            data: {
-                since: selfoss.db.lastUpdate.toISOString(),
-                tags: true,
-                sources: selfoss.filter.sourcesNav ? true : undefined,
-                itemsStatuses: getStatuses,
-                itemsSinceId: selfoss.dbOffline.lastItemId,
-                itemsNotBefore: selfoss.dbOffline.newestGCedEntry.toISOString(),
-                itemsHowMany: selfoss.filter.itemsPerPage,
-                updatedStatuses: updatedStatuses
-            },
+            data: syncParams,
             success: function(data) {
                 selfoss.db.setOnline();
 
@@ -285,6 +289,12 @@ selfoss.dbOffline = {
 
 
     init: function() {
+        if (!selfoss.db.enableOffline) {
+            return new Promise(function(resolve, reject) {
+                reject();
+            });
+        }
+
         selfoss.db.storage = new Dexie('selfoss');
         selfoss.db.storage.version(1).stores({
             entries: '&id,*datetime,unread,starred,html,source,tags,[datetime+id]',
@@ -327,6 +337,11 @@ selfoss.dbOffline = {
                 });
                 $(window).bind('offline', function() {
                     selfoss.db.setOffline();
+                });
+
+                Cookies.set('enableOffline', 'true', {
+                    expires: 30,
+                    path: window.location.pathname
                 });
 
                 $('#content').addClass('loading');
@@ -735,6 +750,7 @@ selfoss.db = {
 
     storage: null,
     online: true,
+    enableOffline: Cookies.get('enableOffline') == 'true',
     entryStatusNames: ['unread', 'starred'],
 
 
@@ -819,8 +835,9 @@ selfoss.db = {
     sync: function(force) {
         force = (typeof force !== 'undefined') ? force : false;
 
-        if (!force && (selfoss.db.lastUpdate === null ||
-                       Date.now() - selfoss.db.lastSync < 5 * 60 * 1000)) {
+        if (selfoss.loggedin &&
+            (!force && (selfoss.db.lastUpdate === null ||
+                        Date.now() - selfoss.db.lastSync < 5 * 60 * 1000))) {
             var d = $.Deferred();
             d.resolve();
             return d; // ensure any chained function runs

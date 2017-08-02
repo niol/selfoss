@@ -145,6 +145,12 @@ var selfoss = {
 
     login: function(e) {
         $('#loginform').addClass('loading');
+
+        selfoss.db.enableOffline = $('#enableoffline').is(':checked');
+        if (!selfoss.db.enableOffline) {
+            selfoss.db.clear();
+        }
+
         var f = $('#loginform form');
         $.ajax({
             type: 'POST',
@@ -158,7 +164,9 @@ var selfoss = {
                     selfoss.ui.login();
                     selfoss.ui.showMainUi();
                     selfoss.initUi();
-                    if (!selfoss.db.storage) {
+                    if (selfoss.db.storage || !selfoss.db.enableOffline) {
+                        selfoss.db.reloadList();
+                    } else {
                         selfoss.dbOffline.init().catch(selfoss.events.init);
                     }
                     selfoss.events.initHash();
