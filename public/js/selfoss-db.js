@@ -107,6 +107,11 @@ selfoss.dbOnline = {
                             && data.lastId > maxId;
                         storing = selfoss.dbOffline.newerEntriesMissing;
 
+                        selfoss.dbOffline
+                            .shouldLoadEntriesOnline = 'lastId' in data
+                            && data.lastId - selfoss.dbOffline.lastItemId >
+                            2 * selfoss.filter.itemsPerPage;
+
                         selfoss.dbOffline.storeEntries(data.newItems)
                             .then(function() {
                                 selfoss.dbOffline.storeLastUpdate(dataDate);
@@ -268,6 +273,7 @@ selfoss.dbOffline = {
 
     lastItemId: false,
     newerEntriesMissing: false,
+    shouldLoadEntriesOnline: false,
     olderEntriesOnline: false,
 
 
@@ -881,7 +887,7 @@ selfoss.db = {
             if (!selfoss.db.storage ||
                 (selfoss.db.online && (
                     selfoss.dbOffline.olderEntriesOnline ||
-                 selfoss.dbOffline.newerEntriesMissing))) {
+                 selfoss.dbOffline.shouldLoadEntriesOnline))) {
                 reloader = selfoss.dbOnline.reloadList;
             }
 
@@ -891,6 +897,13 @@ selfoss.db = {
         };
 
         if (waitForSync && selfoss.dbOnline.syncing) {
+            // do not make the user wait too long if connectivity is bad
+            window.setTimeout(function() {
+                if (selfoss.dbOnline.syncing) {
+                    selfoss.dbOnline.syncing.reject();
+                }
+            }, 5000);
+
             selfoss.dbOnline.syncing.always(reload);
         } else {
             reload();
