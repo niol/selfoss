@@ -488,6 +488,9 @@ var selfoss = {
             } else {
                 selfoss.ui.refreshStreamButtons(true);
             }
+        }
+
+        if (ids.length === 0) {
             return;
         }
 
