@@ -15,8 +15,20 @@ selfoss.dbOnline = {
             selfoss.dbOnline.syncing = $.Deferred();
             selfoss.dbOnline.syncing.always(function() {
                 selfoss.dbOnline.syncing = false;
+                selfoss.db.userWaiting = false;
             });
         }
+
+        if (selfoss.db.userWaiting) {
+            // do not make the user wait too long if connectivity is bad
+            window.setTimeout(function() {
+                if (selfoss.dbOnline.syncing) {
+                    selfoss.dbOnline.syncing.reject();
+                    selfoss.ui.setOffline();
+                }
+            }, 10000);
+        }
+
         return selfoss.dbOnline.syncing;
     },
 
@@ -164,9 +176,17 @@ selfoss.dbOnline = {
                         selfoss.ui.refreshEntryStatuses(data.itemUpdates);
                     }
 
-                    if ('stats' in data && selfoss.filter.type == 'unread' &&
-                        data.stats.unread > $('.entry.unread').length) {
-                        $('.stream-more').show();
+                    if (selfoss.filter.type == 'unread') {
+                        var unreadCount = 0;
+                        if ('stats' in data) {
+                            unreadCount = data.stats.unread;
+                        } else {
+                            unreadCount = parseInt($('.unread-count .count')
+                                .html());
+                        }
+                        if (unreadCount > $('.entry.unread').length) {
+                            $('.stream-more').show();
+                        }
                     }
                 }
 
@@ -758,6 +778,7 @@ selfoss.db = {
     online: true,
     enableOffline: Cookies.get('enableOffline') == 'true',
     entryStatusNames: ['unread', 'starred'],
+    userWaiting: true,
 
 
     /**
@@ -897,13 +918,7 @@ selfoss.db = {
         };
 
         if (waitForSync && selfoss.dbOnline.syncing) {
-            // do not make the user wait too long if connectivity is bad
-            window.setTimeout(function() {
-                if (selfoss.dbOnline.syncing) {
-                    selfoss.dbOnline.syncing.reject();
-                }
-            }, 5000);
-
+            selfoss.db.userWaiting = true;
             selfoss.dbOnline.syncing.always(reload);
         } else {
             reload();
