@@ -557,18 +557,15 @@ var selfoss = {
     handleAjaxError: function(httpCode, tryOffline) {
         tryOffline = (typeof tryOffline !== 'undefined') ? tryOffline : true;
 
-        if (tryOffline && httpCode == 0) {
+        if (tryOffline && (httpCode == 0 || httpCode == 503)) {
             // This means the server could not be reached so we try offline.
             return selfoss.db.setOffline();
         } else {
             var handled  = $.Deferred();
+            handled.reject();
             if (httpCode == 403) {
-                selfoss.ui.showError('Your session has expired');
                 selfoss.ui.logout();
                 selfoss.ui.showLogin('Your session has expired.');
-                handled.resolve();
-            } else {
-                handled.reject();
             }
             return handled;
         }
