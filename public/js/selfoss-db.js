@@ -24,7 +24,6 @@ selfoss.dbOnline = {
             window.setTimeout(function() {
                 if (selfoss.dbOnline.syncing) {
                     selfoss.dbOnline.syncing.reject();
-                    selfoss.ui.setOffline();
                 }
             }, 10000);
         }
@@ -324,7 +323,7 @@ selfoss.dbOffline = {
         selfoss.db.storage = new Dexie('selfoss');
         selfoss.db.storage.version(1).stores({
             entries: '&id,*datetime,unread,starred,html,source,tags,[datetime+id]',
-            statusq: '++id,entryId,name,value,datetime',
+            statusq: '++id,*entryId,name,value,datetime',
             stamps: '&name,datetime',
             stats: '&name,count',
             tags: '&name,unread,color,foreColor'
@@ -370,11 +369,11 @@ selfoss.dbOffline = {
                     path: window.location.pathname
                 });
 
+                selfoss.ui.setOnline();
                 $('#content').addClass('loading');
                 selfoss.db.tryOnline()
                     .then(function() {
                         selfoss.reloadTags();
-                        selfoss.ui.setOnline();
                     })
                     .always(selfoss.events.init);
                 selfoss.dbOffline.reloadOnlineStats();
@@ -536,8 +535,8 @@ selfoss.dbOffline = {
 
                     return true;
                 }).until(function(entry) {
-                // stop iteration if enough entries have been shown
-                // go one further to assess if has more
+                    // stop iteration if enough entries have been shown
+                    // go one further to assess if has more
                     if (howMany >= selfoss.filter.itemsPerPage + 1) {
                         return true;
                     }
@@ -547,19 +546,20 @@ selfoss.dbOffline = {
                     if (seek) {
                         if (ascOrder) {
                             isMore = entry.datetime > fromDatetime
-                            || (entry.datetime == fromDatetime
+                            || (entry.datetime.getTime() == fromDatetime.getTime()
                                 && entry.id > fromId);
                         } else {
                             isMore = entry.datetime < fromDatetime
-                            || (entry.datetime == fromDatetime
+                            || (entry.datetime.getTime() == fromDatetime.getTime()
                                 && entry.id < fromId);
                         }
                     }
 
+
                     if (seek && !ascOrder && !alwaysInDb
                     && entry.datetime < selfoss.dbOffline.newestGCedEntry) {
-                    // the offline db is missing older entries, the next seek
-                    // will have to find them online.
+                        // the offline db is missing older entries, the next
+                        // seek will have to find them online.
                         selfoss.dbOffline.olderEntriesOnline = true;
                         hasMore = true;
                         // There are missing entries before this one, do not
@@ -670,12 +670,7 @@ selfoss.dbOffline = {
             });
         }).then(function() {
             if (statuses.length > 0) {
-                selfoss.dbOnline.sync(statuses, true).done(function() {
-                    selfoss.dbOffline._tr('rw', selfoss.db.storage.statusq,
-                        function() {
-                            selfoss.db.storage.statusq.clear();
-                        });
-                });
+                selfoss.dbOnline.sync(statuses, true);
             } else {
                 selfoss.dbOnline.sync(undefined, true);
             }
@@ -691,6 +686,7 @@ selfoss.dbOffline = {
         return selfoss.dbOffline._tr('rw',
             selfoss.db.storage.entries,
             selfoss.db.storage.stats,
+            selfoss.db.storage.statusq,
             function() {
                 var statsDiff = false;
                 if (updateStats) {
@@ -724,10 +720,15 @@ selfoss.dbOffline = {
                     selfoss.db.storage.entries.get(id).then(function() {
                         selfoss.db.storage.entries.update(id, newStatus);
                     }, function() {
-                    // the key was not found, the status of an entry missing
-                    // in db was updated, request sync.
+                        // the key was not found, the status of an entry
+                        // missing in db was updated, request sync.
                         selfoss.dbOffline.needsSync = true;
                     });
+
+                    // status update from server, remove from status queue
+                    selfoss.db.storage.statusq
+                        .where('entryId').equals(id)
+                        .delete();
                 });
 
                 if (updateStats) {
