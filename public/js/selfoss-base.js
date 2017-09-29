@@ -557,8 +557,7 @@ var selfoss = {
     handleAjaxError: function(httpCode, tryOffline) {
         tryOffline = (typeof tryOffline !== 'undefined') ? tryOffline : true;
 
-        if (tryOffline && (httpCode == 0 || httpCode == 503)) {
-            // This means the server could not be reached so we try offline.
+        if (tryOffline && httpCode != 403) {
             return selfoss.db.setOffline();
         } else {
             var handled  = $.Deferred();
