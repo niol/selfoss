@@ -322,11 +322,12 @@ selfoss.dbOffline = {
 
         selfoss.db.storage = new Dexie('selfoss');
         selfoss.db.storage.version(1).stores({
-            entries: '&id,*datetime,unread,starred,html,source,tags,[datetime+id]',
-            statusq: '++id,*entryId,name,value,datetime',
+            entries: '&id,*datetime,[datetime+id]',
+            statusq: '++id,*entryId',
             stamps: '&name,datetime',
-            stats: '&name,count',
-            tags: '&name,unread,color,foreColor'
+            stats: '&name',
+            tags: '&name',
+            sources: '&id'
         });
         return selfoss.db.storage.open().then(function() {
             // retrieve last update stats in offline db
@@ -822,6 +823,7 @@ selfoss.db = {
             Cookies.remove('offlineDays', {path: window.location.pathname});
             var clearing = selfoss.db.storage.delete();
             selfoss.db.storage = false;
+            selfoss.db.lastUpdate = null;
             return clearing;
         } else {
             var d = $.Deferred();
