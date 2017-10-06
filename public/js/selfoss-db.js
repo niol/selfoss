@@ -319,7 +319,7 @@ selfoss.dbOffline = {
             var d = $.Deferred();
             d.catch = function(fn) {
                 d.then(null, fn);
-            }
+            };
             d.reject();
             return d;
         }
@@ -352,7 +352,7 @@ selfoss.dbOffline = {
                         selfoss.dbOffline.newestGCedEntry = new Date(Date.now() - 24 * 3600 * 1000);
                     }
                 });
-        }).then(function() {
+            }).then(function() {
             var offlineDays = Cookies.get('offlineDays');
             if (offlineDays !== undefined) {
                 selfoss.dbOffline.offlineDays = parseInt(offlineDays);
@@ -738,7 +738,7 @@ selfoss.dbOffline = {
                         selfoss.dbOffline.needsSync = true;
                     });
 
-                    if(dequeue) {
+                    if (dequeue) {
                         // status update from server, remove from status queue
                         selfoss.db.storage.statusq
                             .where('entryId').equals(id)
