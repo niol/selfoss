@@ -137,11 +137,11 @@ selfoss.dbOnline = {
                     }
 
                     if ('itemUpdates' in data) {
-                        // refresh entry statuses in db but do not calculate
-                        // stats as they are taken directly from the server as
-                        // provided
-                        selfoss.dbOffline.storeEntryStatuses(data.itemUpdates,
-                            false)
+                        // refresh entry statuses in db and dequeue queued
+                        // statues but do not calculate stats as they are taken
+                        // directly from the server as provided.
+                        selfoss.dbOffline
+                            .storeEntryStatuses(data.itemUpdates, true, false)
                             .then(function() {
                                 selfoss.dbOffline.storeLastUpdate(dataDate);
                             });
@@ -297,7 +297,8 @@ selfoss.dbOffline = {
 
 
     _tr: function() {
-        return selfoss.db.storage.transaction.apply(null, arguments)
+        return selfoss.db.storage.transaction
+            .apply(selfoss.db.storage, arguments)
             .catch(Dexie.AbortError, function(error) {
                 selfoss.ui.showError('Offline storage error: ' + error.message +
                     '. Reloading may help. Disabling offline for now.');
@@ -316,6 +317,9 @@ selfoss.dbOffline = {
     init: function() {
         if (!selfoss.db.enableOffline) {
             var d = $.Deferred();
+            d.catch = function(fn) {
+                d.then(null, fn);
+            }
             d.reject();
             return d;
         }
@@ -329,57 +333,56 @@ selfoss.dbOffline = {
             tags: '&name',
             sources: '&id'
         });
-        return selfoss.db.storage.open().then(function() {
-            // retrieve last update stats in offline db
-            selfoss.dbOffline._tr('r',
-                selfoss.db.storage.entries,
-                selfoss.db.storage.stamps,
-                function() {
-                    selfoss.dbOffline._memLastItemId();
-                    selfoss.db.storage.stamps.get('lastItemsUpdate', function(stamp) {
-                        if (stamp) {
-                            selfoss.db.lastUpdate = new Date(stamp.datetime);
-                        }
-                    });
-                    selfoss.db.storage.stamps.get('newestGCedEntry', function(stamp) {
-                        if (stamp) {
-                            selfoss.dbOffline.newestGCedEntry = stamp.datetime;
-                        } else {
-                            selfoss.dbOffline.newestGCedEntry = new Date(Date.now() - 24 * 3600 * 1000);
-                        }
-                    });
-                }).then(function() {
-                var offlineDays = Cookies.get('offlineDays');
-                if (offlineDays !== undefined) {
-                    selfoss.dbOffline.offlineDays = parseInt(offlineDays);
-                }
-                selfoss.dbOffline.newestGCedEntry = new Date(Math.max(
-                    selfoss.dbOffline.newestGCedEntry,
-                    Date.now() - (selfoss.dbOffline.offlineDays * 86400000)
-                ));
 
-                $(window).bind('online', function() {
-                    selfoss.db.tryOnline();
+        // retrieve last update stats in offline db
+        return selfoss.dbOffline._tr('r',
+            selfoss.db.storage.entries,
+            selfoss.db.storage.stamps,
+            function() {
+                selfoss.dbOffline._memLastItemId();
+                selfoss.db.storage.stamps.get('lastItemsUpdate', function(stamp) {
+                    if (stamp) {
+                        selfoss.db.lastUpdate = new Date(stamp.datetime);
+                    }
                 });
-                $(window).bind('offline', function() {
-                    selfoss.db.setOffline();
+                selfoss.db.storage.stamps.get('newestGCedEntry', function(stamp) {
+                    if (stamp) {
+                        selfoss.dbOffline.newestGCedEntry = stamp.datetime;
+                    } else {
+                        selfoss.dbOffline.newestGCedEntry = new Date(Date.now() - 24 * 3600 * 1000);
+                    }
                 });
+        }).then(function() {
+            var offlineDays = Cookies.get('offlineDays');
+            if (offlineDays !== undefined) {
+                selfoss.dbOffline.offlineDays = parseInt(offlineDays);
+            }
+            selfoss.dbOffline.newestGCedEntry = new Date(Math.max(
+                selfoss.dbOffline.newestGCedEntry,
+                Date.now() - (selfoss.dbOffline.offlineDays * 86400000)
+            ));
 
-                Cookies.set('enableOffline', 'true', {
-                    expires: 30,
-                    path: window.location.pathname
-                });
-
-                selfoss.ui.setOnline();
-                $('#content').addClass('loading');
-                selfoss.db.tryOnline()
-                    .then(function() {
-                        selfoss.reloadTags();
-                    })
-                    .always(selfoss.events.init);
-                selfoss.dbOffline.reloadOnlineStats();
-                selfoss.dbOffline.refreshStats();
+            $(window).bind('online', function() {
+                selfoss.db.tryOnline();
             });
+            $(window).bind('offline', function() {
+                selfoss.db.setOffline();
+            });
+
+            Cookies.set('enableOffline', 'true', {
+                expires: 30,
+                path: window.location.pathname
+            });
+
+            selfoss.ui.setOnline();
+            $('#content').addClass('loading');
+            selfoss.db.tryOnline()
+                .then(function() {
+                    selfoss.reloadTags();
+                })
+                .always(selfoss.events.init);
+            selfoss.dbOffline.reloadOnlineStats();
+            selfoss.dbOffline.refreshStats();
         }).catch(function() {
             selfoss.db.storage = false;
         });
@@ -638,14 +641,22 @@ selfoss.dbOffline = {
             selfoss.dbOffline.needsSync = true;
         }
 
+        var newQueuedStatuses = [];
+        var d = new Date().toISOString();
+        statuses.forEach(function(newStatus) {
+            newQueuedStatuses.push({
+                entryId: parseInt(newStatus.entryId),
+                name: newStatus.name,
+                value: newStatus.value,
+                datetime: d
+            });
+        });
+
         return selfoss.dbOffline._tr('rw', selfoss.db.storage.statusq,
             function() {
-                statuses.forEach(function(newStatus) {
-                    newStatus.entryId = parseInt(newStatus.entryId);
-                    newStatus.datetime = new Date().toISOString();
-                    selfoss.db.storage.statusq.put(newStatus);
-                });
-            });
+                selfoss.db.storage.statusq.bulkAdd(newQueuedStatuses);
+            }
+        );
     },
 
 
@@ -681,7 +692,8 @@ selfoss.dbOffline = {
     },
 
 
-    storeEntryStatuses: function(itemStatuses, updateStats) {
+    storeEntryStatuses: function(itemStatuses, dequeue, updateStats) {
+        dequeue = (typeof dequeue !== 'undefined') ? dequeue : false;
         updateStats = (typeof updateStats !== 'undefined') ? updateStats : true;
 
         return selfoss.dbOffline._tr('rw',
@@ -726,10 +738,12 @@ selfoss.dbOffline = {
                         selfoss.dbOffline.needsSync = true;
                     });
 
-                    // status update from server, remove from status queue
-                    selfoss.db.storage.statusq
-                        .where('entryId').equals(id)
-                        .delete();
+                    if(dequeue) {
+                        // status update from server, remove from status queue
+                        selfoss.db.storage.statusq
+                            .where('entryId').equals(id)
+                            .delete();
+                    }
                 });
 
                 if (updateStats) {
