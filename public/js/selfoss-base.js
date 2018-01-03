@@ -47,6 +47,10 @@ var selfoss = {
                 });
         });
 
+        // offline db consistency requires ajax calls to fail reliably,
+        // so we enforce a default timeout on ajax calls
+        jQuery.ajaxSetup({timeout: 60000 });
+
         jQuery(document).ready(function() {
             if (selfoss.hasSession() || !$('body').hasClass('authenabled')) {
                 selfoss.ui.login();

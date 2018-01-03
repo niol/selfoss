@@ -146,6 +146,7 @@ class View {
     public static function maxmtime(array $filePaths) {
         $maxmtime = 0;
         foreach ($filePaths as $filePath) {
+            $filePath = explode("?", $filePath)[0]; // strip query string
             $fullPath = \F3::get('BASEDIR') . '/' . $filePath;
 
             if (!file_exists($fullPath)) {
@@ -265,12 +266,13 @@ class View {
      */
     public function genAppcacheManifest() {
         $offlineFiles = array_merge([
-                                        'public/all.js',
-                                        'public/all.css',
-                                        'public/css/fonts.css'
-                                    ],
-                                    self::ls('public/images/*'),
-                                    self::ls('public/fonts/*.woff'));
+                'public/' . self::getGlobalJsFileName(),
+                'public/' . self::getGlobalCssFileName(),
+                'public/css/fonts.css'
+            ],
+            self::ls('public/images/*'),
+            self::ls('public/fonts/*.woff'));
+
         $indirectRessources = [
             'defaults.ini',
             'config.ini',
