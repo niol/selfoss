@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>selfoss - the open source web based rss reader and multi source mashup aggregator</title>
+    <title>selfoss – the open source web based rss reader and multi source mashup aggregator</title>
 
     <meta charset="utf-8">
     <meta name="copyright" content="Tobias Zeising">
@@ -13,8 +13,8 @@
 
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 
-    <link type="text/css" rel="stylesheet" media="screen, handheld, projection, tv" href="style.css">
-    <link rel="stylesheet" type="text/css" href="javascript/fancybox/jquery.fancybox.css" media="screen">
+    <link rel="stylesheet" type="text/css" media="screen" href="style.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="javascript/jquery.fancybox.min.css">
 </head>
 <body>
 
@@ -76,9 +76,9 @@
             <h1>Screenshots</h1>
 
             <ul>
-                <li><a href="images/screenshot1.png" title="selfoss on desktop" rel="screenshots"><img src="images/screenshot1_thumb.png" alt="selfoss on desktop"></a></li>
-                <li><a href="images/screenshot2.png" title="selfoss on ipad" rel="screenshots"><img src="images/screenshot2_thumb.png" alt="selfoss on ipad"></a></li>
-                <li><a href="images/screenshot3.png" title="selfoss on smartphone" rel="screenshots"><img src="images/screenshot3_thumb.png" alt="selfoss on smartphone"></a></li>
+                <li><a href="images/screenshot1.png" title="selfoss on desktop" data-fancybox="screenshots"><img src="images/screenshot1_thumb.png" alt="selfoss on desktop"></a></li>
+                <li><a href="images/screenshot2.png" title="selfoss on ipad" data-fancybox="screenshots"><img src="images/screenshot2_thumb.png" alt="selfoss on ipad"></a></li>
+                <li><a href="images/screenshot3.png" title="selfoss on smartphone" data-fancybox="screenshots"><img src="images/screenshot3_thumb.png" alt="selfoss on smartphone"></a></li>
             </ul>
 
         </div>
@@ -92,7 +92,7 @@
 
             <h2>Requirements</h2>
             <div class="documentation-entry">
-                <p>selfoss is not a hosted service. It has to be installed on your own webserver. This webserver must fulfill the following requirements (which are available from most providers)</p>
+                <p>selfoss is not a hosted service. It has to be installed on your own webserver. This webserver must fulfil the following requirements (which are available from most providers)</p>
                 <ul>
                     <li>PHP 5.4 or higher with the php-gd and php-http extensions enabled. Some spouts may also require curl or mbstring extensions.</li>
                     <li>MySQL 5.5.3 or higher, PostgreSQL, or Sqlite</li>
@@ -174,7 +174,7 @@ db_port=3306</code>
             <div class="documentation-entry">
                 <p>selfoss offers the following configuration parameters. You can set the config parameters in the <code>config.ini</code> file.</p>
 
-                <table border="1" cellspacing="0" cellpadding="5">
+                <table>
                     <tr>
                         <th class="documentation-first-column">Parameter</th>
                         <th>Functionality</th>
@@ -213,7 +213,7 @@ db_port=3306</code>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">logger_level</td>
-                        <td>set logging level – following logging levels are available: <code>EMERGENCY</code>, <code>ALERT</code>, <code>CRITICAL</code>, <code>ERROR</code>, <code>WARNING</code>, <code>NOTICE</code>, <code>INFO</code>, <code>DEBUG</code>. Additionally, you can use <code>NONE</code> pseude-level to turn the logging off completely.<br>Use this for troubleshooting on updating feeds (but be aware that the log file can become very large.) The logged messages will be saved to <code>/data/logs/default.log</code>.</td>
+                        <td>set logging level – following logging levels are available: <code>EMERGENCY</code>, <code>ALERT</code>, <code>CRITICAL</code>, <code>ERROR</code>, <code>WARNING</code>, <code>NOTICE</code>, <code>INFO</code>, <code>DEBUG</code>. Additionally, you can use <code>NONE</code> pseudo-level to turn the logging off completely.<br>Use this for troubleshooting on updating feeds (but be aware that the log file can become very large.) The logged messages will be saved to <code>/data/logs/default.log</code>.</td>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">items_perpage</td>
@@ -241,7 +241,7 @@ db_port=3306</code>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">public</td>
-                        <td>if you use login (username and password is set), you can allow guests to see your stream. Enter 1 for enabling this writeprotected mode</td>
+                        <td>if you use login (username and password is set), you can allow guests to see your stream. Enter 1 for enabling this write-protected mode</td>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">rss_title</td>
@@ -257,13 +257,13 @@ db_port=3306</code>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">homepage</td>
-                        <td>set here your prefered homepage. Choose between <code>newest</code>, <code>unread</code> and <code>starred</code>. It is also possible to configure a tag (e.g. <code>unread/tag-yourtag</code>) or a source (e.g. <code>newest/source-123</code>). Default = <code>newest</code>.</td>
+                        <td>set here your preferred homepage. Choose between <code>newest</code>, <code>unread</code> and <code>starred</code>. It is also possible to configure a tag (e.g. <code>unread/tag-yourtag</code>) or a source (e.g. <code>newest/source-123</code>). Default = <code>newest</code>.</td>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">auto_mark_as_read</td>
                         <td>set this to 1 for automatically marking items as read after open/read them.</td>
                     </tr>
-		    <tr>
+                    <tr>
                         <td class="documentation-first-column">auto_collapse</td>
                         <td>set this to 1 for automatically collapsing items when another one is opened.</td>
                     </tr>
@@ -273,7 +273,7 @@ db_port=3306</code>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">language</td>
-                        <td>set 0 or leave empty for auto detection (browser language) or set "de" for german, "en" for english, "fr" for french, "cs" for czech, "nl" for dutch, "ru" for russian, "tr" for turkish, "lv" for latvian, "tw" for traditional chinese, "cn" for simplified chinese</td>
+                        <td>set 0 or leave empty for auto detection (browser language) or set "de" for German, "en" for English, "fr" for French, "cs" for Czech, "nl" for Dutch, "ru" for Russian, "tr" for Turkish, "lv" for Latvian, "tw" for Traditional Chinese, "cn" for Simplified Chinese</td>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">anonymizer</td>
@@ -338,7 +338,7 @@ db_port=3306</code>
             <div class="documentation-entry">
                 <p>selfoss offers some keyboard shortcuts. They are very similar to the google reader shortcuts.</p>
 
-                <table border="1" cellspacing="0" cellpadding="5">
+                <table>
                     <tr>
                         <th class="documentation-first-column">Shortcut</th>
                         <th>Functionality</th>
@@ -559,7 +559,7 @@ db_port=3306</code>
                 </p>
 
                 <p>
-                    FancyBox on this page is from <a href="http://www.fancyapps.com/fancybox/">fancyapps.com</a>.
+                    FancyBox on this page is from <a href="https://fancyapps.com/fancybox/3/">fancyapps.com</a>.
                 </p>
             </div>
         </div>
@@ -583,9 +583,8 @@ db_port=3306</code>
         </p>
     </div>
 
-    <script type="text/javascript" src="javascript/jquery-1.9.0.min.js"></script>
-    <script type="text/javascript" src="javascript/fancybox/jquery.mousewheel-3.0.6.pack.js"></script>
-    <script type="text/javascript" src="javascript/fancybox/jquery.fancybox.pack.js"></script>
+    <script type="text/javascript" src="javascript/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="javascript/jquery.fancybox.min.js"></script>
     <script type="text/javascript" src="javascript/base.js"></script>
 
 
