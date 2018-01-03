@@ -7,7 +7,7 @@ selfoss.dbOnline = {
 
 
     syncing: false,
-    _syncRequest: false,
+    statsDirty: false,
 
 
     _syncBegin: function() {
@@ -17,13 +17,24 @@ selfoss.dbOnline = {
                 selfoss.dbOnline.syncing = false;
                 selfoss.db.userWaiting = false;
             });
-        }
 
-        if (selfoss.db.userWaiting) {
-            // do not make the user wait too long if connectivity is bad
-            window.setTimeout(function() {
+            var monitor = window.setInterval(function() {
+                var stopChecking = false;
                 if (selfoss.dbOnline.syncing) {
-                    selfoss.dbOnline.syncing.reject();
+                    if (selfoss.db.userWaiting) {
+                        // reject if user has been waiting for more than 10s,
+                        // this means that connectivity is bad: user will get
+                        // local content and server request will continue in
+                        // the background.
+                        selfoss.dbOnline.syncing.reject();
+                        stopChecking = true;
+                    }
+                } else {
+                    stopChecking = true;
+                }
+
+                if (stopChecking) {
+                    window.clearInterval(monitor);
                 }
             }, 10000);
         }
@@ -39,9 +50,10 @@ selfoss.dbOnline = {
             if (success) {
                 selfoss.dbOnline.syncing.resolve();
             } else {
+                var request = selfoss.dbOnline.syncing.request;
                 selfoss.dbOnline.syncing.reject();
-                if (selfoss.dbOnline._syncRequest) {
-                    selfoss.dbOnline._syncRequest.abort();
+                if (request) {
+                    request.abort();
                 }
             }
         }
@@ -91,7 +103,9 @@ selfoss.dbOnline = {
             syncParams.itemsHowMany = selfoss.filter.itemsPerPage;
         }
 
-        selfoss.dbOnline._syncRequest = $.ajax({
+        selfoss.dbOnline.statsDirty = false;
+
+        syncing.request = $.ajax({
             url: 'items/sync',
             type: updatedStatuses ? 'POST' : 'GET',
             dataType: 'json',
@@ -152,7 +166,7 @@ selfoss.dbOnline = {
                     }
                 }
 
-                if ('stats' in data) {
+                if (!selfoss.dbOnline.statsDirty && 'stats' in data) {
                     selfoss.refreshStats(data.stats.total,
                         data.stats.unread,
                         data.stats.starred);
@@ -168,7 +182,7 @@ selfoss.dbOnline = {
 
                 if ('stats' in data && data.stats.unread > 0 &&
                     ($('.stream-empty').is(':visible') ||
-                     $('.stream-error').is(':visible'))) {
+                    $('.stream-error').is(':visible'))) {
                     selfoss.db.reloadList();
                 } else {
                     if ('itemUpdates' in data) {
@@ -202,7 +216,7 @@ selfoss.dbOnline = {
                 });
             },
             complete: function() {
-                selfoss.dbOnline._syncRequest = false;
+                selfoss.dbOnline.syncing.request = false;
             }
         });
 
@@ -681,11 +695,13 @@ selfoss.dbOffline = {
                 statuses.push(statusUpdate);
             });
         }).then(function() {
+            var s = undefined;
             if (statuses.length > 0) {
-                selfoss.dbOnline.sync(statuses, true);
-            } else {
-                selfoss.dbOnline.sync(undefined, true);
+                s = statuses;
             }
+            selfoss.dbOnline.sync(s, true).then(function() {
+                selfoss.dbOffline.needsSync = false;
+            });
         });
 
         return selfoss.dbOnline._syncBegin();
@@ -763,6 +779,7 @@ selfoss.dbOffline = {
 
 
     entriesMark: function(itemIds, unread) {
+        selfoss.dbOnline.statsDirty = true;
         var newStatuses = [];
         itemIds.forEach(function(itemId) {
             newStatuses.push({id: itemId, unread: unread});
@@ -806,6 +823,7 @@ selfoss.db = {
     setOnline: function() {
         if (!selfoss.db.online) {
             selfoss.db.online = true;
+            selfoss.db.sync();
             selfoss.reloadTags();
             selfoss.ui.setOnline();
         }
@@ -880,8 +898,9 @@ selfoss.db = {
         force = (typeof force !== 'undefined') ? force : false;
 
         if (selfoss.loggedin &&
-            (!force && (selfoss.db.lastUpdate === null ||
-                        Date.now() - selfoss.db.lastSync < 5 * 60 * 1000))) {
+            (!force && !selfoss.dbOffline.needsSync &&
+             (selfoss.db.lastUpdate === null ||
+              Date.now() - selfoss.db.lastSync < 5 * 60 * 1000))) {
             var d = $.Deferred();
             d.resolve();
             return d; // ensure any chained function runs
