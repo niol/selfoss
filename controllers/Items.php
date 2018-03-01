@@ -178,9 +178,9 @@ class Items extends BaseController {
         $this->needsLoggedInOrPublicMode();
 
         $params = null;
-        if (array_key_exists('since', $_GET)) {
+        if (isset($_GET['since'])) {
             $params = $_GET;
-        } elseif (array_key_exists('since', $_POST)) {
+        } elseif (isset($_POST['since'])) {
             $params = $_POST;
         }
         if (!array_key_exists('since', $params)) {
