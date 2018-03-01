@@ -84,6 +84,9 @@ var selfoss = {
             // init shares
             selfoss.shares.init($('#config').data('share'));
 
+            // init FancyBox
+            selfoss.initFancyBox();
+
             // init offline if supported and events
             selfoss.dbOffline.init().catch(selfoss.events.init);
 
