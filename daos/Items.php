@@ -80,8 +80,7 @@ class Items extends Database {
         // remove private posts with private tags
         if (!\F3::get('auth')->showPrivateTags()) {
             foreach ($items as $idx => $item) {
-                $tags = explode(',', $item['tags']);
-                foreach ($tags as $tag) {
+                foreach ($item['tags'] as $tag) {
                     if (strpos(trim($tag), '@') === 0) {
                         unset($items[$idx]);
                         break;

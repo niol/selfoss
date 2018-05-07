@@ -86,6 +86,7 @@ class ContentLoader {
         $spout = $spoutLoader->get($source['spout']);
         if ($spout === false) {
             \F3::get('logger')->error('unknown spout: ' . $source['spout']);
+            $this->sourceDao->error($source['id'], 'unknown spout');
 
             return;
         }
@@ -299,12 +300,16 @@ class ContentLoader {
             $imageHelper = new \helpers\Image();
             $thumbnailAsJpg = $imageHelper->loadImage($thumbnail, $extension, 500, 500);
             if ($thumbnailAsJpg !== false) {
-                file_put_contents(
+                $written = file_put_contents(
                     'data/thumbnails/' . md5($thumbnail) . '.' . $extension,
                     $thumbnailAsJpg
                 );
-                $newItem['thumbnail'] = md5($thumbnail) . '.' . $extension;
-                \F3::get('logger')->debug('thumbnail generated: ' . $thumbnail);
+                if ($written !== false) {
+                    $newItem['thumbnail'] = md5($thumbnail) . '.' . $extension;
+                    \F3::get('logger')->debug('Thumbnail generated: ' . $thumbnail);
+                } else {
+                    \F3::get('logger')->warning('Unable to store thumbnail: ' . $thumbnail . '. Please check permissions of data/thumbnails.');
+                }
             } else {
                 $newItem['thumbnail'] = '';
                 \F3::get('logger')->error('thumbnail generation error: ' . $thumbnail);
@@ -333,13 +338,17 @@ class ContentLoader {
                 $imageHelper = new \helpers\Image();
                 $iconAsPng = $imageHelper->loadImage($icon, $extension, 30, null);
                 if ($iconAsPng !== false) {
-                    file_put_contents(
+                    $written = file_put_contents(
                         'data/favicons/' . md5($icon) . '.' . $extension,
                         $iconAsPng
                     );
-                    $newItem['icon'] = md5($icon) . '.' . $extension;
                     $lasticon = $icon;
-                    \F3::get('logger')->debug('icon generated: ' . $icon);
+                    if ($written !== false) {
+                        $newItem['icon'] = md5($icon) . '.' . $extension;
+                        \F3::get('logger')->debug('Icon generated: ' . $icon);
+                    } else {
+                        \F3::get('logger')->warning('Unable to store icon: ' . $icon . '. Please check permissions of data/favicons.');
+                    }
                 } else {
                     $newItem['icon'] = '';
                     \F3::get('logger')->error('icon generation error: ' . $icon);

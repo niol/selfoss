@@ -14,19 +14,16 @@ class Sources extends Database {
      * add new source
      *
      * @param string $title
-     * @param string $tags
+     * @param string[] $tags
      * @param string $spout the source type
      * @param mixed $params depends from spout
      *
      * @return int new id
      */
-    public function add($title, $tags, $filter, $spout, $params) {
-        // sanitize tag list
-        $tags = implode(',', preg_split('/\s*,\s*/', trim($tags), -1, PREG_SPLIT_NO_EMPTY));
-
+    public function add($title, array $tags, $filter, $spout, $params) {
         return $this->stmt->insert('INSERT INTO ' . \F3::get('db_prefix') . 'sources (title, tags, filter, spout, params) VALUES (:title, :tags, :filter, :spout, :params)', [
             ':title' => trim($title),
-            ':tags' => $tags,
+            ':tags' => $this->stmt->csvRow($tags),
             ':filter' => $filter,
             ':spout' => $spout,
             ':params' => htmlentities(json_encode($params))
@@ -38,19 +35,16 @@ class Sources extends Database {
      *
      * @param int $id the source id
      * @param string $title new title
-     * @param string $tags new tags
+     * @param string[] $tags new tags
      * @param string $spout new spout
      * @param mixed $params the new params
      *
      * @return void
      */
-    public function edit($id, $title, $tags, $filter, $spout, $params) {
-        // sanitize tag list
-        $tags = implode(',', preg_split('/\s*,\s*/', trim($tags), -1, PREG_SPLIT_NO_EMPTY));
-
+    public function edit($id, $title, array $tags, $filter, $spout, $params) {
         \F3::get('db')->exec('UPDATE ' . \F3::get('db_prefix') . 'sources SET title=:title, tags=:tags, filter=:filter, spout=:spout, params=:params WHERE id=:id', [
             ':title' => trim($title),
-            ':tags' => $tags,
+            ':tags' => $this->stmt->csvRow($tags),
             ':filter' => $filter,
             ':spout' => $spout,
             ':params' => htmlentities(json_encode($params)),
@@ -152,7 +146,10 @@ class Sources extends Database {
             }
         } else {
             $ret = \F3::get('db')->exec('SELECT id, title, tags, spout, params, filter, error FROM ' . \F3::get('db_prefix') . 'sources ORDER BY error DESC, lower(title) ASC');
-            $ret = $this->stmt->ensureRowTypes($ret, ['id' => \daos\PARAM_INT]);
+            $ret = $this->stmt->ensureRowTypes($ret, [
+                'id' => \daos\PARAM_INT,
+                'tags' => \daos\PARAM_CSV
+            ]);
         }
 
         return $ret;
@@ -201,7 +198,10 @@ class Sources extends Database {
                 ON sources.id=sourceicons.source
             ORDER BY ' . $this->stmt->nullFirst('sources.error', 'DESC') . ', lower(sources.title)');
 
-        return $this->stmt->ensureRowTypes($ret, ['id' => \daos\PARAM_INT]);
+        return $this->stmt->ensureRowTypes($ret, [
+            'id' => \daos\PARAM_INT,
+            'tags' => \daos\PARAM_CSV
+        ]);
     }
 
     /**

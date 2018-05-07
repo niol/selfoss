@@ -27,7 +27,7 @@
             <li class="documentation">documentation</li>
             <li class="about">about</li>
             <li class="forum"><a href="/forum">forum</a></li>
-            <li class="download"><a href="https://github.com/SSilence/selfoss/releases/download/2.18/selfoss-2.18-SNAPSHOT.zip">download</a></li>
+            <li class="download"><a href="https://github.com/SSilence/selfoss/releases/download/2.18/selfoss-2.19-SNAPSHOT.zip">download</a></li>
         </ul>
 
         <a id="header-fork" href="https://github.com/SSilence/selfoss"></a>
@@ -36,7 +36,7 @@
 
         <div id="header-just-updated"></div>
 
-        <a id="header-download" href="https://github.com/SSilence/selfoss/releases/download/2.18/selfoss-2.18-SNAPSHOT.zip"><span>download selfoss 2.18-SNAPSHOT</span></a>
+        <a id="header-download" href="https://github.com/SSilence/selfoss/releases/download/2.18/selfoss-2.19-SNAPSHOT.zip"><span>download selfoss 2.19-SNAPSHOT</span></a>
 
         <a id="header-donate" href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=LR67F3T9DMSC8"><span>donate</span></a>
 
@@ -212,8 +212,12 @@ db_port=3306</code>
                         <td>port for database connections (3306 for mysql, 5432 for PostgreSQL</td>
                     </tr>
                     <tr>
+                        <td class="documentation-first-column">logger_destination</td>
+                        <td>By default, the logs are saved to <code>data/logs/default.log</code> but you can choose a different file by specifying a file path prefixed by <code>file:</code>. Setting <code>file:php://stderr</code> is especially useful when running selfoss on a PaaS or inside Docker. Alternately, you can set the option to <code>error_log</code> to redirect the messages to <a href="https://secure.php.net/manual/en/function.error-log.php">SAPI error log</a> – handy for PHP-FPM, which <a href="https://secure.php.net/manual/en/install.fpm.configuration.php#catch-workers-output">discards stderr</a> by default.</td>
+                    </tr>
+                    <tr>
                         <td class="documentation-first-column">logger_level</td>
-                        <td>set logging level – following logging levels are available: <code>EMERGENCY</code>, <code>ALERT</code>, <code>CRITICAL</code>, <code>ERROR</code>, <code>WARNING</code>, <code>NOTICE</code>, <code>INFO</code>, <code>DEBUG</code>. Additionally, you can use <code>NONE</code> pseudo-level to turn the logging off completely.<br>Use this for troubleshooting on updating feeds (but be aware that the log file can become very large.) The logged messages will be saved to <code>/data/logs/default.log</code>.</td>
+                        <td>set logging level – following logging levels are available: <code>EMERGENCY</code>, <code>ALERT</code>, <code>CRITICAL</code>, <code>ERROR</code>, <code>WARNING</code>, <code>NOTICE</code>, <code>INFO</code>, <code>DEBUG</code>. Additionally, you can use <code>NONE</code> pseudo-level to turn the logging off completely.<br>Use this for troubleshooting on updating feeds (but be aware that the log file can become very large.)</td>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">items_perpage</td>
@@ -284,16 +288,12 @@ db_port=3306</code>
                         <td>set use_system_font=1 if you have problems with special characters. Then instead of Open Sans the font Arial will be used.</td>
                     </tr>
                     <tr>
-                        <td class="documentation-first-column">readability</td>
-                        <td>default API key for all feeds fetched by readability spout. You can also enter the readability API key in the spout parameters for every single feed.</td>
-                    </tr>
-                    <tr>
                         <td class="documentation-first-column">allow_public_update_access</td>
                         <td>set allow_public_update_access=1 for allowing public access for /update (anybody can access and start the update job).</td>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">share</td>
-                        <td>share defines which share buttons beneath the entry are visible. Default is share=gtfprde (g = google, f = facebook, t = twitter, p = pocket, r = readability, d = delicious, w = wallabag, e = email). When you would like to show only facebook and twitter share button use share=ft.</td>
+                        <td>share defines which share buttons beneath the entry are visible. Default is share=gtfprde (g = google, f = facebook, t = twitter, p = pocket, d = delicious, w = wallabag, e = email). When you would like to show only facebook and twitter share button use share=ft.</td>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">wallabag</td>
@@ -330,6 +330,10 @@ db_port=3306</code>
                     <tr>
                         <td class="documentation-first-column">camo_key</td>
                         <td>Camo domain used to proxify images (optional). See <a href="https://github.com/atmos/camo">atmos/camo</a> for more details</td>
+                    </tr>
+                    <tr>
+                        <td class="documentation-first-column">show_thumbnails</td>
+                        <td>If set to false, thumbnails are not shown in the collapsed view. Defaults to true.</td>
                     </tr>
                 </table>
             </div>
@@ -445,7 +449,6 @@ db_port=3306</code>
                     <li>heise News with full content</li>
                     <li>golem News with full content</li>
                     <li>MMOSpy News with full content</li>
-                    <li>RSS Feeds with readability</li>
                 </ul>
                 <p>
                     If you want to get the newest entries from your own source (e.g. an IMAP Email Account, Log Files or any data from your own application), you can include a new spout in your selfoss stream by writing just one php class (saved in one php file).

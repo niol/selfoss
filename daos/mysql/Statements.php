@@ -187,4 +187,23 @@ class Statements {
 
         return $rows;
     }
+
+    /**
+     * convert string array to string for storage in table row
+     *
+     * @param string[] $a
+     *
+     * @return string
+     */
+    public function csvRow(array $a) {
+        $filtered = [];
+        foreach ($a as $s) {
+            $t = trim($s);
+            if ($t) {
+                $filtered[] = $t;
+            }
+        }
+
+        return implode(',', $filtered);
+    }
 }

@@ -2,7 +2,9 @@
 
 namespace spouts\reddit;
 
+use GuzzleHttp\Url;
 use helpers\WebClient;
+use Stringy\Stringy as S;
 
 /**
  * Spout for fetching from reddit
@@ -67,14 +69,8 @@ class reddit2 extends \spouts\spout {
         ]
     ];
 
-    /** @var string the readability api key */
-    private $apiKey = '';
-
     /** @var string the reddit_session cookie */
     private $reddit_session = '';
-
-    /** @var string the scrape urls */
-    private $scrape = true;
 
     /** @var array|null current fetched items */
     protected $items = null;
@@ -93,8 +89,6 @@ class reddit2 extends \spouts\spout {
      * @return void
      */
     public function load($params) {
-        $this->apiKey = \F3::get('readability');
-
         if (!empty($params['password']) && !empty($params['username'])) {
             if (function_exists('apc_fetch')) {
                 $this->reddit_session = apc_fetch("{$params['username']}_selfoss_reddit_session");
@@ -106,7 +100,12 @@ class reddit2 extends \spouts\spout {
             }
         }
 
-        $response = $this->sendRequest('https://www.reddit.com/' . $params['url'] . '.json');
+        // ensure the URL is absolute
+        $url = Url::fromString('https://www.reddit.com/')->combine($params['url']);
+        // and that the path ends with .json (Reddit does not seem to recogize Accept header)
+        $url->setPath(S::create($url->getPath())->ensureRight('.json'));
+
+        $response = $this->sendRequest($url);
         $json = $response->json();
 
         if (isset($json['error'])) {
@@ -223,17 +222,6 @@ class reddit2 extends \spouts\spout {
      */
     public function getHtmlUrl() {
         if ($this->items !== null && $this->valid()) {
-            if (preg_match('/imgur/', @current($this->items)['data']['url'])) {
-                if (!preg_match('/\.(?:gif|jpg|png|svg)$/i', @current($this->items)['data']['url'])) {
-                    $response = $this->sendRequest(@current($this->items)['data']['url'] . '.jpg', 'HEAD');
-                    if ($response->getStatusCode() === 404) {
-                        return @current($this->items)['data']['url'] . '/embed';
-                    }
-
-                    return @current($this->items)['data']['url'] . '.jpg';
-                }
-            }
-
             return @current($this->items)['data']['url'];
         }
 
@@ -249,31 +237,30 @@ class reddit2 extends \spouts\spout {
      */
     public function getContent() {
         if ($this->items !== null && $this->valid()) {
-            $text = @current($this->items)['data']['selftext_html'];
+            $data = @current($this->items)['data'];
+            $text = $data['selftext_html'];
             if (!empty($text)) {
-                return $text;
+                return htmlspecialchars_decode($text);
             }
 
-            if (preg_match('/\.(?:gif|jpg|png|svg)/i', $this->getHtmlUrl())) {
+            if (isset($data['preview']) && isset($data['preview']['images'])) {
+                $text = '';
+                foreach ($data['preview']['images'] as $image) {
+                    if (isset($image['source']) && isset($image['source']['url'])) {
+                        $text .= '<img src="' . $image['source']['url'] . '">';
+                    }
+                }
+
+                if ($text !== '') {
+                    return $text;
+                }
+            }
+
+            if (preg_match('/\.(?:gif|jpg|png|svg)$/i', Url::fromString($this->getHtmlUrl())->getPath())) {
                 return '<img src="' . $this->getHtmlUrl() . '" />';
             }
 
-            //albums, embeds other strange thigs
-            if (preg_match('/embed$/i', $this->getHtmlUrl())) {
-                $response = $this->sendRequest($this->getHtmlUrl());
-
-                return '<a href="' . $this->getHtmlUrl() . '"><img src="' . preg_replace("/s\./", '.', $this->getImage($response->getBody())) . '"/></a>';
-            }
-            if ($this->scrape) {
-                if ($contentFromReadability = $this->fetchFromReadability($this->getHtmlUrl())) {
-                    return $contentFromReadability;
-                }
-                if ($contentFromInstapaper = $this->fetchFromInstapaper($this->getHtmlUrl())) {
-                    return $contentFromInstapaper;
-                }
-            }
-
-            return @current($this->items)['data']['url'];
+            return $data['url'];
         }
 
         return false;
@@ -350,83 +337,6 @@ class reddit2 extends \spouts\spout {
      */
     public function getXmlUrl($params) {
         return  'reddit://' . urlencode($params['url']);
-    }
-
-    /**
-     * fetch content from readability.com
-     *
-     * @author oxman @github
-     *
-     * @throws \GuzzleHttp\Exception\RequestException When an error is encountered
-     * @throws \RuntimeException if the response body is not in JSON format
-     *
-     * @return string content
-     */
-    private function fetchFromReadability($url) {
-        if (empty($this->apiKey)) {
-            return false;
-        }
-
-        $response = $this->sendRequest('https://readability.com/api/content/v1/parser?token=' . $this->apiKey . '&url=' . urlencode($url));
-
-        $data = $response->json();
-        if (!isset($data['content'])) {
-            return false;
-        }
-
-        return $data['content'];
-    }
-
-    /**
-     * fetch content from instapaper.com
-     *
-     * @author janeczku @github
-     *
-     * @throws \GuzzleHttp\Exception\RequestException When an error is encountered
-     *
-     * @return string content
-     */
-    private function fetchFromInstapaper($url) {
-        $content = $this->sendRequest('https://www.instapaper.com/text?u=' . urlencode($url))->getBody();
-
-        $dom = new \DOMDocument();
-        @$dom->loadHTML($content);
-        if (!$dom) {
-            return false;
-        }
-        $xpath = new \DOMXPath($dom);
-        $elements = $xpath->query("//div[@id='story']");
-        $content = $dom->saveXML($elements->item(0), LIBXML_NOEMPTYTAG);
-
-        return $content;
-    }
-
-    /**
-     * taken from: http://zytzagoo.net/blog/2008/01/23/extracting-images-from-html-using-regular-expressions/
-     * Searches for the first occurence of an html <img> element in a string
-     * and extracts the src if it finds it. Returns boolean false in case an
-     * <img> element is not found.
-     *
-     * @param    string  $str    An HTML string
-     *
-     * @return   mixed           The contents of the src attribute in the
-     *                           found <img> or boolean false if no <img>
-     *                           is found
-     */
-    private function getImage($html) {
-        if (stripos($html, '<img') !== false) {
-            $imgsrc_regex = '#<\s*img [^\>]*src\s*=\s*(["\'])(.*?)\1#im';
-            preg_match($imgsrc_regex, $html, $matches);
-            unset($imgsrc_regex);
-            unset($html);
-            if (is_array($matches) && !empty($matches)) {
-                return $matches[2];
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
     }
 
     /**
