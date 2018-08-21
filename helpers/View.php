@@ -306,7 +306,7 @@ class View {
 
             fwrite($f, "var offlineManifest = {\n");
             fwrite($f, "    subdir: '" . $subdir . "',\n");
-            fwrite($f, "    version: " . $staticmtime . ",\n");
+            fwrite($f, '    version: ' . $staticmtime . ",\n");
             fwrite($f, "    files: [\n");
             fwrite($f, "        '" . $subdir . "',\n");
 
@@ -326,40 +326,4 @@ class View {
         }
     }
 
-    private static function mime($filepath) {
-        $fileExt = pathinfo($filepath, PATHINFO_EXTENSION);
-
-        $mime = null;
-        if ($fileExt == 'appcache') {
-            $mime = 'text/cache-manifest';
-        } else {
-            $mime = mime_content_type($filepath);
-        }
-
-        return $mime;
-    }
-
-    public function sendfile($relativePath) {
-        $path = \F3::get('BASEDIR') . '/' . $relativePath;
-
-        if (file_exists($path)) {
-            $send = true;
-            $fileDate = new \Datetime('@' . filemtime($path));
-            if (isset(\F3::get('HEADERS')['If-Modified-Since'])) {
-                $clientDate = new \Datetime(\F3::get('HEADERS')['If-Modified-Since']);
-                $send = $clientDate < $fileDate;
-            }
-            if ($send) {
-                header('Cache-Control: must-revalidate');
-                header('Content-Length: ' . filesize($path));
-                header('Last-Modified: ' . $fileDate->format('Y-m-d H:i:s \G\M\T'));
-                header('Content-Type: ' . self::mime($path));
-                readfile($path);
-            } else {
-                \F3::status(304);
-            }
-        } else {
-            \F3::error(404);
-        }
-    }
 }

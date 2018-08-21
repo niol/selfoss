@@ -40,7 +40,6 @@ $f3->route('GET /logout', 'controllers\Index->logout'); // json
 $f3->route('GET /update', 'controllers\Index->update'); // text
 $f3->route('GET /badge', 'controllers\Index->badge'); // xml
 $f3->route('GET /win8notifs', 'controllers\Index->win8Notifications'); // xml
-$f3->route('GET /selfoss.appcache', 'controllers\Index->appCacheManifest'); // text
 
 // only for loggedin users or on public mode
 $f3->route('GET /rss', 'controllers\Rss->rss'); // rss

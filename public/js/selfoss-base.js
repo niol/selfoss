@@ -43,14 +43,14 @@ var selfoss = {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('selfoss-sw-offline.js')
                     .then(function(reg) {
-                    selfoss.listenWaitingSW(reg, function(reg) {
-                        selfoss.ui.notifyNewVersion(function() {
-                            if (reg.waiting) {
-                                reg.waiting.postMessage('skipWaiting');
-                            }
+                        selfoss.listenWaitingSW(reg, function(reg) {
+                            selfoss.ui.notifyNewVersion(function() {
+                                if (reg.waiting) {
+                                    reg.waiting.postMessage('skipWaiting');
+                                }
+                            });
                         });
                     });
-                });
             });
 
             navigator.serviceWorker.addEventListener('controllerchange',
@@ -602,11 +602,9 @@ var selfoss = {
 
         if (!reg) {
             return;
-        }
-        else if (reg.waiting) {
+        } else if (reg.waiting) {
             return callback(reg);
-        }
-        else if (reg.installing) {
+        } else if (reg.installing) {
             awaitStateChange();
             reg.addEventListener('updatefound', awaitStateChange);
         }
