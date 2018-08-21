@@ -1,3 +1,7 @@
+/* ServiceWorker environment, and prepended script */
+/* global offlineManifest:false, Promise */
+
+
 self.addEventListener('install', function(event) {
     event.waitUntil(
         caches.open(offlineManifest.version).then(function(cache) {

@@ -306,7 +306,7 @@ class View {
 
             fwrite($f, "var offlineManifest = {\n");
             fwrite($f, "    subdir: '" . $subdir . "',\n");
-            fwrite($f, "    version: " . $staticmtime . ",\n");
+            fwrite($f, '    version: ' . $staticmtime . ",\n");
             fwrite($f, "    files: [\n");
             fwrite($f, "        '" . $subdir . "',\n");
 
