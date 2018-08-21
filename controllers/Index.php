@@ -228,9 +228,4 @@ class Index extends BaseController {
             'hasMore' => $itemDao->hasMore()
         ];
     }
-
-    public function appCacheManifest() {
-        $this->view->genAppcacheManifest();
-        $this->view->sendfile('public/selfoss.appcache');
-    }
 }
