@@ -286,7 +286,7 @@ selfoss.ui = {
 
 
     notifyNewVersion: function(cb) {
-        cb = (typeof cb !== 'undefined') ? cb: false;
+        cb = (typeof cb !== 'undefined') ? cb : false;
 
         if (!cb) {
             cb = function() {
@@ -295,10 +295,10 @@ selfoss.ui = {
         }
 
         selfoss.ui.showMessage('selfoss has been updated, please reload',
-                               'Reload',
-                               function() {
-            cb();
-        });
+            'Reload',
+            function() {
+                cb();
+            });
     },
 
 
