@@ -183,7 +183,7 @@ class Items extends BaseController {
         } elseif (isset($_POST['since'])) {
             $params = $_POST;
         }
-        if (!array_key_exists('since', $params)) {
+        if ($params === null || !array_key_exists('since', $params)) {
             $this->view->jsonError(['sync' => 'missing since argument']);
         }
 
