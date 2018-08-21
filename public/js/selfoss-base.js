@@ -39,13 +39,26 @@ var selfoss = {
      * initialize application
      */
     init: function() {
-        window.applicationCache.addEventListener('updateready', function() {
-            selfoss.ui.showMessage('selfoss has been updated, please reload',
-                'Reload',
-                function() {
-                    location.reload();
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('selfoss-sw-offline.js')
+                    .then(function(reg) {
+                    selfoss.listenWaitingSW(reg, function(reg) {
+                        selfoss.ui.notifyNewVersion(function() {
+                            if (reg.waiting) {
+                                reg.waiting.postMessage('skipWaiting');
+                            }
+                        });
+                    });
                 });
-        });
+            });
+
+            navigator.serviceWorker.addEventListener('controllerchange',
+                function() {
+                    window.location.reload();
+                }
+            );
+        }
 
         // offline db consistency requires ajax calls to fail reliably,
         // so we enforce a default timeout on ajax calls
@@ -575,7 +588,30 @@ var selfoss = {
             }
             return handled;
         }
+    },
+
+
+    listenWaitingSW: function(reg, callback) {
+        function awaitStateChange() {
+            reg.installing.addEventListener('statechange', function() {
+                if (this.state === 'installed') {
+                    callback(reg);
+                }
+            });
+        }
+
+        if (!reg) {
+            return;
+        }
+        else if (reg.waiting) {
+            return callback(reg);
+        }
+        else if (reg.installing) {
+            awaitStateChange();
+            reg.addEventListener('updatefound', awaitStateChange);
+        }
     }
+
 
 };
 
