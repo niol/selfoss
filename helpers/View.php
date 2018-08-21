@@ -325,5 +325,4 @@ class View {
             fclose($f);
         }
     }
-
 }
