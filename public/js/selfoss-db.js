@@ -537,11 +537,11 @@ selfoss.dbOffline = {
                     fromDatetime = new Date(fromDatetime);
                 }
                 var isMore = false;
-                var alwaysInDb = selfoss.filter.type == 'starred'
-                             || selfoss.filter.type == 'unread';
+                var alwaysInDb = selfoss.filter.type === 'starred'
+                             || selfoss.filter.type === 'unread';
 
                 entries.filter(function(entry) {
-                    if ($.inArray(entry.id, selfoss.filter.extraIds) > -1) {
+                    if (selfoss.filter.extraIds.indexOf(entry.id) > -1) {
                         return true;
                     }
 

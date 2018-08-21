@@ -171,7 +171,7 @@ body * {
         }
 
         .unread-count.online span.count::before {
-            content: "\2601\0000a0"; /* cloud and non breaking space */
+            content: "\2601\a0"; /* cloud and non breaking space */
         }
 
         .unread-count.unread.offline {

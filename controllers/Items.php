@@ -178,12 +178,12 @@ class Items extends BaseController {
         $this->needsLoggedInOrPublicMode();
 
         $params = null;
-        if (array_key_exists('since', $_GET)) {
+        if (isset($_GET['since'])) {
             $params = $_GET;
-        } elseif (array_key_exists('since', $_POST)) {
+        } elseif (isset($_POST['since'])) {
             $params = $_POST;
         }
-        if (!array_key_exists('since', $params)) {
+        if ($params === null || !array_key_exists('since', $params)) {
             $this->view->jsonError(['sync' => 'missing since argument']);
         }
 

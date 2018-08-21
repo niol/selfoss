@@ -336,6 +336,23 @@ selfoss.ui = {
     },
 
 
+    notifyNewVersion: function(cb) {
+        cb = (typeof cb !== 'undefined') ? cb: false;
+
+        if (!cb) {
+            cb = function() {
+                window.location.reload();
+            };
+        }
+
+        selfoss.ui.showMessage('selfoss has been updated, please reload',
+                               'Reload',
+                               function() {
+            cb();
+        });
+    },
+
+
     refreshEntryDatetimes: function() {
         $('.entry').not('.timestamped').each(function() {
             var datetime = $(this).data('entry-datetime');

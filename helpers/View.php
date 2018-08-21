@@ -31,6 +31,7 @@ class View {
         $this->genMinified(self::STATIC_RESOURCE_JS);
         $this->genMinified(self::STATIC_RESOURCE_CSS);
         $this->base = $this->getBaseUrl();
+        $this->genOfflineSW();
     }
 
     /**
@@ -144,7 +145,7 @@ class View {
     public static function maxmtime(array $filePaths) {
         $maxmtime = 0;
         foreach ($filePaths as $filePath) {
-            $filePath = explode("?", $filePath)[0]; // strip query string
+            $filePath = explode('?', $filePath)[0]; // strip query string
             $fullPath = \F3::get('BASEDIR') . '/' . $filePath;
 
             if (!file_exists($fullPath)) {
@@ -257,44 +258,70 @@ class View {
         return $files;
     }
 
-    /**
-     * Build the CACHE MANIFEST from static ressources.
-     *
-     * @return void
-     */
-    public function genAppcacheManifest() {
+    public static function offlineFiles() {
         $offlineFiles = array_merge([
                 'public/' . self::getGlobalJsFileName(),
                 'public/' . self::getGlobalCssFileName(),
                 'public/css/fonts.css'
             ],
             self::ls('public/images/*'),
-            self::ls('public/fonts/*.woff'));
+            self::ls('public/fonts/*.woff')
+        );
 
+        return $offlineFiles;
+    }
+
+    public static function offlineMtime(array $offlineFiles) {
         $indirectRessources = [
             'defaults.ini',
             'config.ini',
-            'templates/home.phtml'
+            'templates/home.phtml',
+            'public/js/selfoss-sw-offline.js'
         ];
 
-        $staticmtime = self::maxmtime(array_merge($offlineFiles, $indirectRessources));
+        return self::maxmtime(array_merge($offlineFiles, $indirectRessources));
+    }
 
-        $target = \F3::get('BASEDIR') . '/public/selfoss.appcache';
+    /**
+     * Build the offline service worker source from static ressources.
+     *
+     * @return void
+     */
+    public function genOfflineSW() {
+        $offlineFiles = self::offlineFiles();
+        $staticmtime = self::offlineMtime($offlineFiles);
+
+        $target = \F3::get('BASEDIR') . '/public/selfoss-sw-offline.js';
 
         if (!file_exists($target) || filemtime($target) < $staticmtime) {
             $subdir = parse_url($this->base)['path'];
 
+            $data = [
+                'subdir' => $subdir,
+                'version' => $staticmtime,
+                'files' => []
+            ];
+
             $f = fopen($target, 'w');
-            fwrite($f, "CACHE MANIFEST\n");
-            fwrite($f, '# v=' . $staticmtime . "\n");
+
+            fwrite($f, "var offlineManifest = {\n");
+            fwrite($f, "    subdir: '" . $subdir . "',\n");
+            fwrite($f, "    version: " . $staticmtime . ",\n");
+            fwrite($f, "    files: [\n");
+            fwrite($f, "        '" . $subdir . "',\n");
+
             foreach ($offlineFiles as $fn) {
                 if (substr($fn, 0, 7) == 'public/') {
                     $fn = substr($fn, 7);
                 }
-                fwrite($f, $subdir . $fn . "\n");
+                fwrite($f, "        '" . $subdir . $fn . "',\n");
             }
-            fwrite($f, "NETWORK:\n");
-            fwrite($f, "*\n");
+
+            fwrite($f, "    ]\n");
+            fwrite($f, "};\n");
+            fwrite($f, "\n\n");
+            fwrite($f, file_get_contents(\F3::get('BASEDIR')
+                       . '/public/js/selfoss-sw-offline.js'));
             fclose($f);
         }
     }

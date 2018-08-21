@@ -156,14 +156,9 @@
                 <hr>
             </div>
 
-            <?php if ($this->loggedin === true && \F3::get('auth')->enabled() === false) : ?>
-            <button id="nav-refresh" title="<?= trim(\F3::get('lang_refreshbutton')); ?>" class="nologin"></button>
-            <button id="nav-settings" title="<?= trim(\F3::get('lang_settingsbutton')); ?>" class="nologin"></button>
-            <?php endif; ?>
-
-            <button id="nav-refresh" class="offlineable" title="<?= trim(\F3::get('lang_refreshbutton')); ?>"></button>
-            <button id="nav-settings" class="offlineable" title="<?= trim(\F3::get('lang_settingsbutton')); ?>"></button>
-            <button id="nav-logout" class="offlineable" title="<?= trim(\F3::get('lang_logoutbutton')); ?>"></button>
+            <button id="nav-refresh" title="<?= trim(\F3::get('lang_refreshbutton')); ?>"></button>
+            <button id="nav-settings" title="<?= trim(\F3::get('lang_settingsbutton')); ?>"></button>
+            <button id="nav-logout" title="<?= trim(\F3::get('lang_logoutbutton')); ?>"></button>
 
             <?php if ($this->publicMode === true) : ?>
             <button id="nav-login" title="<?= trim(\F3::get('lang_loginbutton')); ?>"></button>
@@ -184,7 +179,6 @@
 
         <!-- content -->
         <div id="content" role="main">
-            <?= $this->content; ?>
         </div>
 
         <div id="stream-buttons">
