@@ -257,8 +257,7 @@ selfoss.dbOnline = {
                 selfoss.refreshStats(data.all, data.unread, data.starred);
 
                 $('#content').append(data.entries);
-                selfoss.ui.refreshStreamButtons(true,
-                    $('.entry').not('.fullscreen').length > 0, data.hasMore);
+                selfoss.ui.refreshStreamButtons(true, data.hasMore);
 
                 // update tags
                 selfoss.refreshTags(data.tags);
@@ -363,13 +362,16 @@ selfoss.dbOffline = {
                 selfoss.dbOffline._memLastItemId();
                 selfoss.db.storage.stamps.get('lastItemsUpdate', function(stamp) {
                     if (stamp) {
-                        selfoss.db.lastUpdate = new Date(stamp.datetime);
+                        selfoss.db.lastUpdate = stamp.datetime;
                     }
                 });
                 selfoss.db.storage.stamps.get('newestGCedEntry', function(stamp) {
                     if (stamp) {
                         selfoss.dbOffline.newestGCedEntry = stamp.datetime;
-                    } else {
+                    }
+
+                    var limit = new Date(Date.now() - 3 * 24 * 3600 * 1000);
+                    if (!stamp || selfoss.dbOffline.newestGCedEntry < limit) {
                         selfoss.dbOffline.newestGCedEntry = new Date(Date.now() - 24 * 3600 * 1000);
                     }
                 });
@@ -614,7 +616,7 @@ selfoss.dbOffline = {
                     } else {
                         content.replaceWith(newContent);
                     }
-                    selfoss.ui.refreshStreamButtons(true, howMany > 0, hasMore);
+                    selfoss.ui.refreshStreamButtons(true, hasMore);
                 });
             });
     },
@@ -749,7 +751,7 @@ selfoss.dbOffline = {
                     });
 
                     var id = parseInt(itemStatus.id);
-                    selfoss.db.storage.entries.get(id).then(function() {
+                    selfoss.db.storage.entries.get(id).then(function(entry) {
                         selfoss.db.storage.entries.update(id, newStatus);
                     }, function() {
                         // the key was not found, the status of an entry

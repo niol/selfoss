@@ -124,14 +124,13 @@ selfoss.ui = {
     },
 
 
-    refreshStreamButtons: function(entries, hasEntries, hasMore) {
+    refreshStreamButtons: function(entries, hasMore) {
         entries = (typeof entries !== 'undefined') ? entries : false;
-        hasEntries = (typeof hasEntries !== 'undefined') ? hasEntries : false;
         hasMore = (typeof hasMore !== 'undefined') ? hasMore : false;
 
         $('.stream-button, .stream-empty').css('display', 'block').hide();
         if (entries) {
-            if (hasEntries) {
+            if ($('.entry').not('.fullscreen').length > 0) {
                 $('.stream-empty').hide();
                 if (selfoss.isSmartphone()) {
                     $('.mark-these-read').show();
