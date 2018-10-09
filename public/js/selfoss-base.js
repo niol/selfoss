@@ -563,7 +563,7 @@ var selfoss = {
                     selfoss.dbOffline.enqueueStatuses(statuses);
                 }, function() {
                     content.html(articleList);
-                    selfoss.ui.refreshStreamButtons(true, true, hadMore);
+                    selfoss.ui.refreshStreamButtons(true, hadMore);
                     $('#content').removeClass('loading');
                     selfoss.events.entries();
                     selfoss.ui.showError($('#lang').data('error_mark_items') +
