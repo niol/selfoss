@@ -182,8 +182,7 @@ class Items extends BaseController {
             $params = $_GET;
         } elseif (isset($_POST['since'])) {
             $params = $_POST;
-        }
-        if ($params === null || !array_key_exists('since', $params)) {
+        } else {
             $this->view->jsonError(['sync' => 'missing since argument']);
         }
 
@@ -205,15 +204,16 @@ class Items extends BaseController {
                 $notBefore = date_create($params['itemsNotBefore']);
                 if ($sinceId < 1 || !$notBefore) {
                     $sinceId = $itemsDao->lowestIdOfInterest() - 1;
+                    // only send 1 day worth of items
                     $notBefore = new \DateTime();
                     $notBefore->sub(new \DateInterval('P1D'));
                 }
 
                 $itemsHowMany = \F3::get('items_perpage');
-                if (array_key_exists('itemsHowMAny', $params)
-                    && is_int($params['itemsHowMAny'])) {
-                    $itemsHowMAny = min($params['itemsHowMAny'],
-                                        2 * $itemsHowMAny);
+                if (array_key_exists('itemsHowMany', $params)
+                    && is_int($params['itemsHowMany'])) {
+                    $itemsHowMany = min($params['itemsHowMany'],
+                                        2 * $itemsHowMany);
                 }
 
                 $tagsController = new \controllers\Tags();
