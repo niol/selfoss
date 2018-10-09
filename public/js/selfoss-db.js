@@ -751,7 +751,7 @@ selfoss.dbOffline = {
                     });
 
                     var id = parseInt(itemStatus.id);
-                    selfoss.db.storage.entries.get(id).then(function(entry) {
+                    selfoss.db.storage.entries.get(id).then(function() {
                         selfoss.db.storage.entries.update(id, newStatus);
                     }, function() {
                         // the key was not found, the status of an entry
@@ -785,7 +785,7 @@ selfoss.dbOffline = {
 
     entriesMark: function(itemIds, unread) {
         selfoss.dbOnline.statsDirty = true;
-        var newStatuses = itemIds.map(function(itemId, index, a) {
+        var newStatuses = itemIds.map(function(itemId) {
             return {id: itemId, unread: unread};
         });
         return selfoss.dbOffline.storeEntryStatuses(newStatuses);

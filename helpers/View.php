@@ -311,9 +311,9 @@ class View {
 
             $f = fopen($target, 'w');
 
-            fwrite($f, "var offlineManifest = ");
+            fwrite($f, 'var offlineManifest = ');
             fwrite($f, json_encode($data,
-                                   JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
+                                   JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
             fwrite($f, ";\n");
             fwrite($f, "\n\n");
             fwrite($f, file_get_contents(\F3::get('BASEDIR')
