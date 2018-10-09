@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@fancyapps/fancybox": "^3.1.20",
+    "dexie": "^2.0.1",
     "jquery": "^2.2.4",
     "jquery-hotkeys": "^0.2.2",
     "jquery-mousewheel": "^3.1.13",
@@ -25,6 +26,7 @@
         "public/node_modules/js-cookie/src/js.cookie.js",
         "public/node_modules/spectrum-colorpicker/spectrum.js",
         "public/node_modules/jquery-hotkeys/jquery-hotkeys.js",
+        "public/node_modules/dexie/dist/dexie.js",
         "public/js/selfoss-base.js",
         "public/js/selfoss-shares.js",
         "public/js/selfoss-db.js",

@@ -76,7 +76,7 @@ selfoss.events.entriesToolbar = function(parent) {
             var id = parent.attr('id').substr(5);
             var starr = $(this).hasClass('active') == false;
 
-            selfoss.ui.entryStarr(id, starr);
+            selfoss.ui.entryStar(id, starr);
 
             // update statistics in main menue
             var updateStats = function(starr) {
@@ -91,7 +91,7 @@ selfoss.events.entriesToolbar = function(parent) {
             updateStats(starr);
 
             if (selfoss.db.storage) {
-                selfoss.dbOffline.entryStarr(id, starr);
+                selfoss.dbOffline.entryStar(id, starr);
             }
 
             $.ajax({
@@ -106,7 +106,7 @@ selfoss.events.entriesToolbar = function(parent) {
                         selfoss.dbOffline.enqueueStatus(id, 'starred', starr);
                     }, function() {
                         // rollback ui changes
-                        selfoss.ui.entryStarr(id, !starr);
+                        selfoss.ui.entryStar(id, !starr);
                         updateStats(!starr);
                         selfoss.ui.showError('Can not star/unstar item: ' +
                                             textStatus + ' ' + errorThrown);
