@@ -631,7 +631,7 @@ class Items extends Database {
      *
      * @return void
      */
-    public function bulkStatusUpdate($statuses) {
+    public function bulkStatusUpdate(array $statuses) {
         $sql = [];
         foreach ($statuses as $status) {
             if (array_key_exists('id', $status)) {
