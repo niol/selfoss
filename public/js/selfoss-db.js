@@ -740,9 +740,9 @@ selfoss.dbOffline = {
 
                             if (updateStats) {
                                 if (itemStatus[statusName]) {
-                                    statsDiff[statusName] = statsDiff[statusName]++;
+                                    statsDiff[statusName]++;
                                 } else {
-                                    statsDiff[statusName] = statsDiff[statusName]--;
+                                    statsDiff[statusName]--;
                                 }
                             }
                         }
