@@ -73,7 +73,7 @@ selfoss.ui = {
     },
 
 
-    entryStarr: function(id, starred, domNode) {
+    entryStar: function(id, starred, domNode) {
         var button = $('#entry' + id + ' .entry-starr, #entrr' + id + ' .entry-starr',
             domNode);
 
@@ -117,7 +117,7 @@ selfoss.ui = {
                 return newStatus;
             });
             if (newStatus) {
-                selfoss.ui.entryStarr(id, newStatus.starred);
+                selfoss.ui.entryStar(id, newStatus.starred);
                 selfoss.ui.entryMark(id, newStatus.unread);
             }
         });
@@ -337,8 +337,6 @@ selfoss.ui = {
 
 
     notifyNewVersion: function(cb) {
-        cb = (typeof cb !== 'undefined') ? cb : false;
-
         if (!cb) {
             cb = function() {
                 window.location.reload();
