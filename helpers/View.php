@@ -272,18 +272,18 @@ class View {
     }
 
     public static function offlineMtime(array $offlineFiles) {
-        $indirectRessources = [
+        $indirectResources = [
             'defaults.ini',
             'config.ini',
             'templates/home.phtml',
             'public/js/selfoss-sw-offline.js'
         ];
 
-        return self::maxmtime(array_merge($offlineFiles, $indirectRessources));
+        return self::maxmtime(array_merge($offlineFiles, $indirectResources));
     }
 
     /**
-     * Build the offline service worker source from static ressources.
+     * Build the offline service worker source from static resources.
      *
      * @return void
      */
@@ -302,23 +302,19 @@ class View {
                 'files' => []
             ];
 
-            $f = fopen($target, 'w');
-
-            fwrite($f, "var offlineManifest = {\n");
-            fwrite($f, "    subdir: '" . $subdir . "',\n");
-            fwrite($f, '    version: ' . $staticmtime . ",\n");
-            fwrite($f, "    files: [\n");
-            fwrite($f, "        '" . $subdir . "',\n");
-
             foreach ($offlineFiles as $fn) {
                 if (substr($fn, 0, 7) == 'public/') {
                     $fn = substr($fn, 7);
                 }
-                fwrite($f, "        '" . $subdir . $fn . "',\n");
+                $data['files'][] = $subdir . $fn;
             }
 
-            fwrite($f, "    ]\n");
-            fwrite($f, "};\n");
+            $f = fopen($target, 'w');
+
+            fwrite($f, 'var offlineManifest = ');
+            fwrite($f, json_encode($data,
+                                   JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            fwrite($f, ";\n");
             fwrite($f, "\n\n");
             fwrite($f, file_get_contents(\F3::get('BASEDIR')
                        . '/public/js/selfoss-sw-offline.js'));
