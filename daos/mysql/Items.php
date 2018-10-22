@@ -660,10 +660,10 @@ class Items extends Database {
                     if (array_key_exists('datetime', $status)) {
                         $updateDate = new \DateTime($status['datetime']);
                     } else {
-                        $updateDate = false;
+                        $updateDate = null;
                     }
 
-                    if ($statusUpdate !== null && $updateDate) {
+                    if ($statusUpdate !== null && $updateDate !== null) {
                         $sk = $statusUpdate['sk'];
                         if (array_key_exists($id, $sql)) {
                             // merge status updates for the same entry and

@@ -1,7 +1,7 @@
 /**
  * db functions: client data repository (and offline storage)
  *
- * db is a dispacher class and holds the logic for deciding whether selfoss
+ * db is a dispatcher class and holds the logic for deciding whether selfoss
  * is running online with access to the server or offline.
  *
  * dbOnline contains AJAX calls that provide access to the server db.
@@ -902,16 +902,11 @@ selfoss.db = {
     sync: function(force) {
         force = (typeof force !== 'undefined') ? force : false;
 
-        if (selfoss.loggedin &&
-            (!force && !selfoss.dbOffline.needsSync &&
-             (selfoss.db.lastUpdate === null ||
-              Date.now() - selfoss.db.lastSync < 5 * 60 * 1000))) {
-            var d = $.Deferred();
-            d.resolve();
-            return d; // ensure any chained function runs
-        }
-
-        if (selfoss.db.storage) {
+        var lastUpdateIsOld = selfoss.db.lastUpdate === null || Date.now() - selfoss.db.lastSync < 5 * 60 * 1000;
+        var shouldSync = !force && !selfoss.dbOffline.needsSync && lastUpdateIsOld;
+        if (!selfoss.loggedin || (selfoss.loggedin && shouldSync)) {
+            return $.Deferred().resolve(); // ensure any chained function runs
+        } else if (selfoss.db.storage) {
             return selfoss.dbOffline.sendNewStatuses();
         } else {
             return selfoss.dbOnline.sync();
@@ -946,10 +941,8 @@ selfoss.db = {
                 reloader = selfoss.dbOnline.reloadList;
             }
 
-            if (!selfoss.db.storage ||
-                (selfoss.db.online && (
-                    selfoss.dbOffline.olderEntriesOnline ||
-                 selfoss.dbOffline.shouldLoadEntriesOnline))) {
+            var forceLoadOnline = selfoss.dbOffline.olderEntriesOnline || selfoss.dbOffline.shouldLoadEntriesOnline;
+            if (!selfoss.db.storage || (selfoss.db.online && forceLoadOnline)) {
                 reloader = selfoss.dbOnline.reloadList;
             }
 
