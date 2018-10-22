@@ -582,7 +582,7 @@ var selfoss = {
             handled.reject();
             if (httpCode == 403) {
                 selfoss.ui.logout();
-                selfoss.ui.showLogin('Your session has expired.');
+                selfoss.ui.showLogin($('#lang').data('error_session_expired'));
             }
             return handled;
         }

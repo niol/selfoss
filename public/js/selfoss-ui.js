@@ -237,7 +237,7 @@ selfoss.ui = {
                             plural[pluralKeyword] = buffer;
                             buffer = '';
                             pluralKeyword = undefined;
-                        } else {
+                        } else if (plural) {
                             if ('zero' in plural
                                     && placeholder.value === 0) {
                                 pluralValue = plural.zero;
@@ -249,6 +249,10 @@ selfoss.ui = {
                             }
                             formatted = formatted + pluralValue.replace('#', placeholder.value);
                             plural = undefined;
+                            placeholder = undefined;
+                            state = 'out';
+                        } else {
+                            formatted = formatted + placeholder.value;
                             placeholder = undefined;
                             state = 'out';
                         }
