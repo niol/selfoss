@@ -174,7 +174,7 @@ selfoss.events = {
                         selfoss.filter.sourcesNav = true;
                     }
                 } else if (selfoss.events.subsection != 'all') {
-                    selfoss.ui.showError('Invalid subsection: '
+                    selfoss.ui.showError($('#lang').data('error_invalid_subsection') + ' '
                                          + selfoss.events.subsection);
                     done();
                     return;
@@ -190,7 +190,7 @@ selfoss.events = {
             selfoss.db.reloadList();
         } else if (hash == 'sources') { // load sources
             if (selfoss.events.subsection) {
-                selfoss.ui.showError('Invalid subsection: '
+                selfoss.ui.showError($('#lang').data('error_invalid_subsection') + ' '
                                      + selfoss.events.subsection);
                 done();
                 return;
@@ -199,7 +199,6 @@ selfoss.events = {
             if (selfoss.activeAjaxReq !== null) {
                 selfoss.activeAjaxReq.abort();
             }
-
             selfoss.ui.refreshStreamButtons();
             $('#content').addClass('loading').html('');
             selfoss.activeAjaxReq = $.ajax({
@@ -215,7 +214,7 @@ selfoss.events = {
                     }
 
                     selfoss.handleAjaxError(jqXHR.status, false).fail(function() {
-                        selfoss.ui.showError('Load sources list error: ' +
+                        selfoss.ui.showError($('#lang').data('error_loading') + ' ' +
                                              textStatus + ' ' + errorThrown);
                     });
                 },
@@ -226,7 +225,7 @@ selfoss.events = {
         } else if (hash == 'login') {
             selfoss.ui.showLogin();
         } else {
-            selfoss.ui.showError('Invalid section: ' + selfoss.events.section);
+            selfoss.ui.showError($('#lang').data('error_invalid_subsection') + ' ' + selfoss.events.section);
         }
         done();
     },

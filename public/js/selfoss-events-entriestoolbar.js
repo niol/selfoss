@@ -108,8 +108,8 @@ selfoss.events.entriesToolbar = function(parent) {
                         // rollback ui changes
                         selfoss.ui.entryStar(id, !starr);
                         updateStats(!starr);
-                        selfoss.ui.showError('Can not star/unstar item: ' +
-                                            textStatus + ' ' + errorThrown);
+                        selfoss.ui.showError($('#lang').data('error_star_item') + ' ' +
+                                             textStatus + ' ' + errorThrown);
                     });
                 }
             });
@@ -163,8 +163,8 @@ selfoss.events.entriesToolbar = function(parent) {
                         // rollback ui changes
                         selfoss.ui.entryMark(id, unread);
                         updateStats(!unread);
-                        selfoss.ui.showError('Can not mark/unmark item: ' +
-                                            textStatus + ' ' + errorThrown);
+                        selfoss.ui.showError($('#lang').data('error_mark_item') + ' ' +
+                                             textStatus + ' ' + errorThrown);
                     });
                 }
             });

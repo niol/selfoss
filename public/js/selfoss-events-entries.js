@@ -201,7 +201,7 @@ selfoss.events.entries = function() {
             error: function(jqXHR, textStatus, errorThrown) {
                 content.html(articleList);
                 $('#content').removeClass('loading');
-                alert('Can not refresh source: ' + errorThrown);
+                alert($('#lang').data('error_refreshing_source') + ' ' + errorThrown);
             }
         });
     });

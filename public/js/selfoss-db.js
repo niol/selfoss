@@ -1,7 +1,7 @@
 /**
  * db functions: client data repository (and offline storage)
  *
- * db is a dispacher class and holds the logic for deciding whether selfoss
+ * db is a dispatcher class and holds the logic for deciding whether selfoss
  * is running online with access to the server or offline.
  *
  * dbOnline contains AJAX calls that provide access to the server db.
@@ -219,7 +219,8 @@ selfoss.dbOnline = {
             error: function(jqXHR, textStatus, errorThrown) {
                 selfoss.dbOnline._syncDone(false);
                 selfoss.handleAjaxError(jqXHR.status).fail(function() {
-                    selfoss.ui.showError('Could not sync last changes from server: ' + textStatus + ' ' + errorThrown);
+                    selfoss.ui.showError($('#lang').data('error_sync') + ' ' +
+                                         textStatus + ' ' + errorThrown);
                 });
             },
             complete: function() {
@@ -282,8 +283,8 @@ selfoss.dbOnline = {
                     selfoss.dbOffline.reloadList();
                     selfoss.ui.afterReloadList();
                 }, function() {
-                    selfoss.ui.showError('Load list error: ' +
-                                         textStatus + ' ' + errorThrown);
+                    selfoss.ui.showError($('#lang').data('error_loading') +
+                                         ' ' + textStatus + ' ' + errorThrown);
                     selfoss.events.entries();
                     selfoss.ui.refreshStreamButtons();
                     $('.stream-error').show();
@@ -320,14 +321,13 @@ selfoss.dbOffline = {
         return selfoss.db.storage.transaction
             .apply(selfoss.db.storage, arguments)
             .catch(Dexie.AbortError, function(error) {
-                selfoss.ui.showError('Offline storage error: ' + error.message +
-                    '. Reloading may help. Disabling offline for now.');
+                selfoss.ui.showError(selfoss.ui._($('#lang').data('error_offline_storage'), [error.message]));
                 selfoss.db.storage = null;
                 selfoss.db.reloadList();
 
                 // If this is a QuotaExceededError, garbage collect more
                 // entries and hope it helps.
-                if (error.message == 'QuotaExceededError ') {
+                if (error.name === Dexie.errnames.QuotaExceeded) {
                     selfoss.dbOffline.GCEntries(true);
                 }
             });
@@ -377,8 +377,8 @@ selfoss.dbOffline = {
                 });
             })
             .then(function() {
-                var offlineDays = Cookies.get('offlineDays');
-                if (offlineDays !== undefined) {
+                var offlineDays = window.localStorage.getItem('offlineDays');
+                if (offlineDays !== null) {
                     selfoss.dbOffline.offlineDays = parseInt(offlineDays);
                 }
                 selfoss.dbOffline.newestGCedEntry = new Date(Math.max(
@@ -391,11 +391,6 @@ selfoss.dbOffline = {
                 });
                 $(window).bind('offline', function() {
                     selfoss.db.setOffline();
-                });
-
-                Cookies.set('enableOffline', 'true', {
-                    expires: 30,
-                    path: window.location.pathname
                 });
 
                 selfoss.ui.setOnline();
@@ -454,8 +449,8 @@ selfoss.dbOffline = {
                 Math.min(keptDays - 1, selfoss.dbOffline.offlineDays - 1),
                 0
             );
-            Cookies.set('offlineDays', selfoss.dbOffline.offlineDays,
-                {path: window.location.pathname});
+            window.localStorage.setItem('offlineDays',
+                                        selfoss.dbOffline.offlineDays);
         }
 
         return selfoss.db.storage.transaction('rw',
@@ -813,7 +808,7 @@ selfoss.db = {
 
     storage: null,
     online: true,
-    enableOffline: Cookies.get('enableOffline') == 'true',
+    enableOffline: window.localStorage.getItem('enableOffline') === 'true',
     entryStatusNames: ['unread', 'starred'],
     userWaiting: true,
 
@@ -856,7 +851,7 @@ selfoss.db = {
 
     clear: function() {
         if (selfoss.db.storage) {
-            Cookies.remove('offlineDays', {path: window.location.pathname});
+            window.localStorage.removeItem('offlineDays');
             var clearing = selfoss.db.storage.delete();
             selfoss.db.storage = false;
             selfoss.db.lastUpdate = null;
@@ -901,16 +896,11 @@ selfoss.db = {
     sync: function(force) {
         force = (typeof force !== 'undefined') ? force : false;
 
-        if (selfoss.loggedin &&
-            (!force && !selfoss.dbOffline.needsSync &&
-             (selfoss.db.lastUpdate === null ||
-              Date.now() - selfoss.db.lastSync < 5 * 60 * 1000))) {
-            var d = $.Deferred();
-            d.resolve();
-            return d; // ensure any chained function runs
-        }
-
-        if (selfoss.db.storage) {
+        var lastUpdateIsOld = selfoss.db.lastUpdate === null || Date.now() - selfoss.db.lastSync < 5 * 60 * 1000;
+        var shouldSync = !force && !selfoss.dbOffline.needsSync && lastUpdateIsOld;
+        if (!selfoss.loggedin || (selfoss.loggedin && shouldSync)) {
+            return $.Deferred().resolve(); // ensure any chained function runs
+        } else if (selfoss.db.storage) {
             return selfoss.dbOffline.sendNewStatuses();
         } else {
             return selfoss.dbOnline.sync();
@@ -945,10 +935,8 @@ selfoss.db = {
                 reloader = selfoss.dbOnline.reloadList;
             }
 
-            if (!selfoss.db.storage ||
-                (selfoss.db.online && (
-                    selfoss.dbOffline.olderEntriesOnline ||
-                 selfoss.dbOffline.shouldLoadEntriesOnline))) {
+            var forceLoadOnline = selfoss.dbOffline.olderEntriesOnline || selfoss.dbOffline.shouldLoadEntriesOnline;
+            if (!selfoss.db.storage || (selfoss.db.online && forceLoadOnline)) {
                 reloader = selfoss.dbOnline.reloadList;
             }
 

@@ -143,22 +143,19 @@ var selfoss = {
 
 
     setSession: function() {
-        Cookies.set('onlineSession', 'true', {
-            expires: 10,
-            path: window.location.pathname
-        });
+        window.localStorage.setItem('onlineSession', true);
         selfoss.loggedin = true;
     },
 
 
     clearSession: function() {
-        Cookies.remove('onlineSession', {path: window.location.pathname});
+        window.localStorage.removeItem('onlineSession');
         selfoss.loggedin = false;
     },
 
 
     hasSession: function() {
-        selfoss.loggedin = Cookies.get('onlineSession') == 'true';
+        selfoss.loggedin = window.localStorage.getItem('onlineSession') == 'true';
         return selfoss.loggedin;
     },
 
@@ -167,6 +164,7 @@ var selfoss = {
         $('#loginform').addClass('loading');
 
         selfoss.db.enableOffline = $('#enableoffline').is(':checked');
+        window.localStorage.setItem('enableOffline', selfoss.db.enableOffline);
         if (!selfoss.db.enableOffline) {
             selfoss.db.clear();
         }
@@ -215,7 +213,7 @@ var selfoss = {
             url: 'logout',
             dataType: 'json',
             error: function(jqXHR, textStatus, errorThrown) {
-                selfoss.ui.showError('Could not log out: ' +
+                selfoss.ui.showError($('#lang').data('error_logout') + ' ' +
                                      textStatus + ' ' + errorThrown);
             }
         });
@@ -344,7 +342,7 @@ var selfoss = {
                 selfoss.events.navigation();
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                selfoss.ui.showError('Load tags error: ' +
+                selfoss.ui.showError($('#lang').data('error_load_tags') + ' ' +
                                      textStatus + ' ' + errorThrown);
             },
             complete: function() {
@@ -366,7 +364,7 @@ var selfoss = {
         $('#nav-tags').append(tags);
         if (selfoss.filter.tag) {
             if (!selfoss.db.isValidTag(selfoss.filter.tag)) {
-                selfoss.ui.showError('Unknown tag: ' + selfoss.filter.tag);
+                selfoss.ui.showError($('#lang').data('error_unknown_tag') + ' ' + selfoss.filter.tag);
             }
 
             $('#nav-tags li:first').removeClass('active');
@@ -398,7 +396,7 @@ var selfoss = {
         $('#nav-sources').append(sources);
         if (selfoss.filter.source) {
             if (!selfoss.db.isValidSource(selfoss.filter.source)) {
-                selfoss.ui.showError('Unknown source id: '
+                selfoss.ui.showError($('#lang').data('error_unknown_source') + ' '
                                      + selfoss.filter.source);
             }
 
@@ -566,8 +564,8 @@ var selfoss = {
                     selfoss.ui.refreshStreamButtons(true, hadMore);
                     $('#content').removeClass('loading');
                     selfoss.events.entries();
-                    selfoss.ui.showError('Can not mark all visible item: ' +
-                                         textStatus + ' ' + errorThrown);
+                    selfoss.ui.showError($('#lang').data('error_mark_items') +
+                                         ' ' + textStatus + ' ' + errorThrown);
                 });
             }
         });
@@ -584,7 +582,7 @@ var selfoss = {
             handled.reject();
             if (httpCode == 403) {
                 selfoss.ui.logout();
-                selfoss.ui.showLogin('Your session has expired.');
+                selfoss.ui.showLogin($('#lang').data('error_session_expired'));
             }
             return handled;
         }
