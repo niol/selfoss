@@ -378,8 +378,8 @@ selfoss.dbOffline = {
                 });
             })
             .then(function() {
-                var offlineDays = Cookies.get('offlineDays');
-                if (offlineDays !== undefined) {
+                var offlineDays = window.localStorage.getItem('offlineDays');
+                if (offlineDays !== null) {
                     selfoss.dbOffline.offlineDays = parseInt(offlineDays);
                 }
                 selfoss.dbOffline.newestGCedEntry = new Date(Math.max(
@@ -392,11 +392,6 @@ selfoss.dbOffline = {
                 });
                 $(window).bind('offline', function() {
                     selfoss.db.setOffline();
-                });
-
-                Cookies.set('enableOffline', 'true', {
-                    expires: 30,
-                    path: window.location.pathname
                 });
 
                 selfoss.ui.setOnline();
@@ -455,8 +450,8 @@ selfoss.dbOffline = {
                 Math.min(keptDays - 1, selfoss.dbOffline.offlineDays - 1),
                 0
             );
-            Cookies.set('offlineDays', selfoss.dbOffline.offlineDays,
-                {path: window.location.pathname});
+            window.localStorage.setItem('offlineDays',
+                                        selfoss.dbOffline.offlineDays);
         }
 
         return selfoss.db.storage.transaction('rw',
@@ -814,7 +809,7 @@ selfoss.db = {
 
     storage: null,
     online: true,
-    enableOffline: Cookies.get('enableOffline') == 'true',
+    enableOffline: window.localStorage.getItem('enableOffline') === 'true',
     entryStatusNames: ['unread', 'starred'],
     userWaiting: true,
 
@@ -857,7 +852,7 @@ selfoss.db = {
 
     clear: function() {
         if (selfoss.db.storage) {
-            Cookies.remove('offlineDays', {path: window.location.pathname});
+            window.localStorage.removeItem('offlineDays');
             var clearing = selfoss.db.storage.delete();
             selfoss.db.storage = false;
             selfoss.db.lastUpdate = null;

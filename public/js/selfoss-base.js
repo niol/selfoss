@@ -143,22 +143,19 @@ var selfoss = {
 
 
     setSession: function() {
-        Cookies.set('onlineSession', 'true', {
-            expires: 10,
-            path: window.location.pathname
-        });
+        window.localStorage.setItem('onlineSession', true);
         selfoss.loggedin = true;
     },
 
 
     clearSession: function() {
-        Cookies.remove('onlineSession', {path: window.location.pathname});
+        window.localStorage.removeItem('onlineSession');
         selfoss.loggedin = false;
     },
 
 
     hasSession: function() {
-        selfoss.loggedin = Cookies.get('onlineSession') == 'true';
+        selfoss.loggedin = window.localStorage.getItem('onlineSession') == 'true';
         return selfoss.loggedin;
     },
 
@@ -167,6 +164,7 @@ var selfoss = {
         $('#loginform').addClass('loading');
 
         selfoss.db.enableOffline = $('#enableoffline').is(':checked');
+        window.localStorage.setItem('enableOffline', selfoss.db.enableOffline);
         if (!selfoss.db.enableOffline) {
             selfoss.db.clear();
         }
