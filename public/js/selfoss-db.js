@@ -450,7 +450,7 @@ selfoss.dbOffline = {
                 0
             );
             window.localStorage.setItem('offlineDays',
-                                        selfoss.dbOffline.offlineDays);
+                selfoss.dbOffline.offlineDays);
         }
 
         return selfoss.db.storage.transaction('rw',
