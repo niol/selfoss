@@ -321,7 +321,7 @@ selfoss.dbOffline = {
         return selfoss.db.storage.transaction
             .apply(selfoss.db.storage, arguments)
             .catch(Dexie.AbortError, function(error) {
-                selfoss.ui.showError(selfoss.ui._($('#lang').data('error_offline_storage'), [error.message]));
+                selfoss.ui.showError(selfoss.ui._('error_offline_storage', [error.message]));
                 selfoss.db.storage = null;
                 selfoss.db.reloadList();
 
