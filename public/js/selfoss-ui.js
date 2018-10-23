@@ -346,8 +346,8 @@ selfoss.ui = {
             };
         }
 
-        selfoss.ui.showMessage('selfoss has been updated, please reload',
-            'Reload',
+        selfoss.ui.showMessage(selfoss.ui._('app_update'),
+            selfoss.ui._('app_reload'),
             function() {
                 cb();
             });
