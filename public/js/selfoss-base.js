@@ -516,6 +516,8 @@ var selfoss = {
         var articleList = content.html();
         var hadMore = $('.stream-more').is(':visible');
 
+        selfoss.ui.beforeReloadList(true);
+
         var unreadstats = parseInt($('.nav-filter-unread span.count').html()) -
             ids.length;
         var displayed = false;
@@ -562,8 +564,7 @@ var selfoss = {
                 }, function() {
                     content.html(articleList);
                     selfoss.ui.refreshStreamButtons(true, hadMore);
-                    $('#content').removeClass('loading');
-                    selfoss.events.entries();
+                    selfoss.ui.listReady();
                     selfoss.ui.showError($('#lang').data('error_mark_items') +
                                          ' ' + textStatus + ' ' + errorThrown);
                 });

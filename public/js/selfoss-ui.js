@@ -162,18 +162,23 @@ selfoss.ui = {
     },
 
 
+    listReady: function() {
+        $('#content').removeClass('loading');
+        $('#stream-buttons').show();
+        selfoss.events.entries();
+    },
+
+
     afterReloadList: function(cleared) {
         cleared = (typeof cleared !== 'undefined') ? cleared : true;
 
-        $('#content').removeClass('loading');
+        selfoss.ui.listReady();
 
         if (cleared) {
             $(document).scrollTop(0);
         }
 
-        $('#stream-buttons').show();
         selfoss.ui.refreshEntryDatetimes();
-        selfoss.events.entries();
         selfoss.events.search();
     },
 
