@@ -299,7 +299,7 @@ class View {
             $data = [
                 'subdir' => $subdir,
                 'version' => $staticmtime,
-                'files' => []
+                'files' => [$subdir]
             ];
 
             foreach ($offlineFiles as $fn) {
