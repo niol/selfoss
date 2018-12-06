@@ -308,10 +308,10 @@ selfoss.dbOffline = {
 
     // the datetime of the newest garbage collected entry, i.e. deleted
     // because not of interest.
-    newestGCedEntry: false,
+    newestGCedEntry: null,
     offlineDays: 10,
 
-    lastItemId: false,
+    lastItemId: null,
     newerEntriesMissing: false,
     shouldLoadEntriesOnline: false,
     olderEntriesOnline: false,
@@ -381,6 +381,9 @@ selfoss.dbOffline = {
                 if (offlineDays !== null) {
                     selfoss.dbOffline.offlineDays = parseInt(offlineDays);
                 }
+                // The newest garbage collected entry is either what's already
+                // in the offline db or if more recent the entry older than
+                // offlineDays ago.
                 selfoss.dbOffline.newestGCedEntry = new Date(Math.max(
                     selfoss.dbOffline.newestGCedEntry,
                     Date.now() - (selfoss.dbOffline.offlineDays * 86400000)

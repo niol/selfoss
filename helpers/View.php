@@ -264,8 +264,7 @@ class View {
                 'public/' . self::getGlobalCssFileName(),
                 'public/css/fonts.css'
             ],
-            self::ls('public/images/*'),
-            self::ls('public/fonts/*.woff')
+            self::ls('public/images/*')
         );
 
         return $offlineFiles;
@@ -309,16 +308,11 @@ class View {
                 $data['files'][] = $subdir . $fn;
             }
 
-            $f = fopen($target, 'w');
-
-            fwrite($f, 'var offlineManifest = ');
-            fwrite($f, json_encode($data,
-                                   JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-            fwrite($f, ";\n");
-            fwrite($f, "\n\n");
-            fwrite($f, file_get_contents(\F3::get('BASEDIR')
-                       . '/public/js/selfoss-sw-offline.js'));
-            fclose($f);
+            $offlineWorker = 'var offlineManifest = ';
+            $offlineWorker .= json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            $offlineWorker .= ";\n\n\n";
+            $offlineWorker .= file_get_contents(\F3::get('BASEDIR') . '/public/js/selfoss-sw-offline.js');
+            file_put_contents($target, $offlineWorker);
         }
     }
 }
