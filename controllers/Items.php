@@ -196,9 +196,7 @@ class Items extends BaseController {
         ];
 
         $sinceId = 0;
-        $wantNewItems = array_key_exists('itemsSinceId', $params)
-                        && $params['itemsSinceId'] != 'false';
-        if ($wantNewItems) {
+        if (array_key_exists('itemsSinceId', $params)) {
             $sinceId = intval($params['itemsSinceId']);
             if ($sinceId >= 0) {
                 $notBefore = date_create($params['itemsNotBefore']);

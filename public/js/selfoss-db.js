@@ -224,7 +224,7 @@ selfoss.dbOnline = {
                 });
             },
             complete: function() {
-                selfoss.dbOnline.syncing.request = false;
+                selfoss.dbOnline.syncing.request = null;
             }
         });
 
@@ -406,7 +406,7 @@ selfoss.dbOffline = {
                 selfoss.dbOffline.reloadOnlineStats();
                 selfoss.dbOffline.refreshStats();
             }).catch(function() {
-                selfoss.db.storage = false;
+                selfoss.db.storage = null;
             });
     },
 
@@ -724,7 +724,7 @@ selfoss.dbOffline = {
             selfoss.db.storage.stats,
             selfoss.db.storage.statusq,
             function() {
-                var statsDiff = false;
+                var statsDiff = null;
                 if (updateStats) {
                     statsDiff = {};
                 }
@@ -856,7 +856,7 @@ selfoss.db = {
         if (selfoss.db.storage) {
             window.localStorage.removeItem('offlineDays');
             var clearing = selfoss.db.storage.delete();
-            selfoss.db.storage = false;
+            selfoss.db.storage = null;
             selfoss.db.lastUpdate = null;
             return clearing;
         } else {
