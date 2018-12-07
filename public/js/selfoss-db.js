@@ -724,10 +724,7 @@ selfoss.dbOffline = {
             selfoss.db.storage.stats,
             selfoss.db.storage.statusq,
             function() {
-                var statsDiff = null;
-                if (updateStats) {
-                    statsDiff = {};
-                }
+                var statsDiff = {};
 
                 // update entries statuses
                 itemStatuses.forEach(function(itemStatus) {
