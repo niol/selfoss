@@ -261,8 +261,7 @@ class View {
     public static function offlineFiles() {
         $offlineFiles = array_merge([
                 'public/' . self::getGlobalJsFileName(),
-                'public/' . self::getGlobalCssFileName(),
-                'public/css/fonts.css'
+                'public/' . self::getGlobalCssFileName()
             ],
             self::ls('public/images/*')
         );
