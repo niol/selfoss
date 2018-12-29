@@ -363,6 +363,8 @@ selfoss.dbOffline = {
                 selfoss.db.storage.stamps.get('lastItemsUpdate', function(stamp) {
                     if (stamp) {
                         selfoss.db.lastUpdate = stamp.datetime;
+                    } else {
+                        selfoss.dbOffline.shouldLoadEntriesOnline = true;
                     }
                 });
                 selfoss.db.storage.stamps.get('newestGCedEntry', function(stamp) {
@@ -890,20 +892,22 @@ selfoss.db = {
     },
 
 
-    lastSync: Date.now(),
+    lastSync: null,
 
 
     sync: function(force) {
         force = (typeof force !== 'undefined') ? force : false;
 
-        var lastUpdateIsOld = selfoss.db.lastUpdate === null || Date.now() - selfoss.db.lastSync < 5 * 60 * 1000;
-        var shouldSync = !force && !selfoss.dbOffline.needsSync && lastUpdateIsOld;
-        if (!selfoss.loggedin || (selfoss.loggedin && shouldSync)) {
-            return $.Deferred().resolve(); // ensure any chained function runs
-        } else if (selfoss.db.storage) {
-            return selfoss.dbOffline.sendNewStatuses();
+        var lastUpdateIsOld = selfoss.db.lastUpdate === null || selfoss.db.lastSync === null || Date.now() - selfoss.db.lastSync > 5 * 60 * 1000;
+        var shouldSync = force || selfoss.dbOffline.needsSync || lastUpdateIsOld;
+        if (selfoss.loggedin && shouldSync) {
+            if (selfoss.db.storage) {
+                return selfoss.dbOffline.sendNewStatuses();
+            } else {
+                return selfoss.dbOnline.sync();
+            }
         } else {
-            return selfoss.dbOnline.sync();
+            return $.Deferred().resolve(); // ensure any chained function runs
         }
     },
 
