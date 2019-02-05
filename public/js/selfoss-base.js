@@ -610,19 +610,19 @@ var selfoss = {
     },
 
 
-	/*
-	 * Handy function that can be used for debugging purposes.
-	 */
+    /*
+     * Handy function that can be used for debugging purposes.
+     */
     nukeLocalData: function() {
-		selfoss.db.clear(); // will not work after a failure, since storage is nulled
-		window.localStorage.clear();
-		navigator.serviceWorker.getRegistrations().then(function(registrations) {
-			registrations.forEach(function(reg) {
-				reg.unregister();
-			});
-		});
-		selfoss.logout();
-	}
+        selfoss.db.clear(); // will not work after a failure, since storage is nulled
+        window.localStorage.clear();
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            registrations.forEach(function(reg) {
+                reg.unregister();
+            });
+        });
+        selfoss.logout();
+    }
 
 
 };
