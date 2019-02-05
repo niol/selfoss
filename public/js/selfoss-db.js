@@ -331,7 +331,7 @@ selfoss.dbOffline = {
                     selfoss.dbOffline.GCEntries(true);
                 }
 
-                throw(error);
+                throw (error);
             });
     },
 
@@ -354,6 +354,12 @@ selfoss.dbOffline = {
             stats: '&name',
             tags: '&name',
             sources: '&id'
+        });
+
+        selfoss.db.storage.on('populate', function() {
+            selfoss.db.storage.stats.add({name: 'unread', value: 0});
+            selfoss.db.storage.stats.add({name: 'starred', value: 0});
+            selfoss.db.storage.stats.add({name: 'total', value: 0});
         });
 
         // retrieve last update stats in offline db
