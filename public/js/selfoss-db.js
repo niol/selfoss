@@ -330,6 +330,8 @@ selfoss.dbOffline = {
                 if (error.name === Dexie.errnames.QuotaExceeded) {
                     selfoss.dbOffline.GCEntries(true);
                 }
+
+                throw(error);
             });
     },
 
