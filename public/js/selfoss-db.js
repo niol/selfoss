@@ -15,6 +15,7 @@ selfoss.dbOnline = {
 
     syncing: false,
     statsDirty: false,
+    firstSync: true,
 
 
     _syncBegin: function() {
@@ -88,7 +89,7 @@ selfoss.dbOnline = {
         var syncing = selfoss.dbOnline._syncBegin();
 
         var getStatuses = true;
-        if (selfoss.db.lastUpdate === null) {
+        if (selfoss.db.lastUpdate === null || selfoss.dbOnline.firstSync) {
             selfoss.db.lastUpdate = new Date(0);
             getStatuses = undefined;
         }
@@ -121,6 +122,7 @@ selfoss.dbOnline = {
                 selfoss.db.setOnline();
 
                 selfoss.db.lastSync = Date.now();
+                selfoss.dbOnline.firstSync = false;
 
                 var dataDate = new Date(data.lastUpdate);
 
@@ -371,6 +373,7 @@ selfoss.dbOffline = {
                 selfoss.db.storage.stamps.get('lastItemsUpdate', function(stamp) {
                     if (stamp) {
                         selfoss.db.lastUpdate = stamp.datetime;
+                        selfoss.dbOnline.firstSync = false;
                     } else {
                         selfoss.dbOffline.shouldLoadEntriesOnline = true;
                     }
