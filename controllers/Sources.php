@@ -2,6 +2,8 @@
 
 namespace controllers;
 
+use Base;
+
 /**
  * Controller for sources handling
  *
@@ -29,7 +31,6 @@ class Sources extends BaseController {
              '<a class="source-export" href="opmlexport">' . \F3::get('lang_source_export') . '</a>' .
              '<a class="source-opml" href="opml">' . \F3::get('lang_source_opml');
         $sourcesHtml = '</a>';
-        $i = 0;
 
         foreach ($sourcesDao->getWithIcon() as $source) {
             $this->view->source = $source;
@@ -71,11 +72,11 @@ class Sources extends BaseController {
         $spout = str_replace('_', '\\', $_GET['spout']);
         $this->view->spout = $spoutLoader->get($spout);
 
-        if ($this->view->spout === false) {
+        if ($this->view->spout === null) {
             $this->view->error('invalid spout type given');
         }
 
-        if ($this->view->spout->params !== false) {
+        if (count($this->view->spout->params) > 0) {
             $this->view->idAttr = 'new-' . rand();
             echo $this->view->render('templates/source_params.phtml');
         }
@@ -85,11 +86,12 @@ class Sources extends BaseController {
      * return all Sources suitable for navigation panel
      * html
      *
+     * @param array $sources
+     *
      * @return string htmltext
      */
-    public function renderSources($sources) {
+    public function renderSources(array $sources) {
         $html = '';
-        $itemsDao = new \daos\Items();
         foreach ($sources as $source) {
             $this->view->source = $source['title'];
             $this->view->sourceid = $source['id'];
@@ -118,9 +120,12 @@ class Sources extends BaseController {
      * render spouts params
      * json
      *
+     * @param Base $f3 fatfree base instance
+     * @param array $params query string parameters
+     *
      * @return void
      */
-    public function write() {
+    public function write(Base $f3, array $params) {
         $this->needsLoggedIn();
 
         $sourcesDao = new \daos\Sources();
@@ -156,16 +161,14 @@ class Sources extends BaseController {
         $tags = array_map('htmlspecialchars', $data['tags']);
         $spout = $data['spout'];
         $filter = $data['filter'];
-        $isAjax = isset($data['ajax']);
 
         unset($data['title']);
         unset($data['spout']);
         unset($data['filter']);
         unset($data['tags']);
-        unset($data['ajax']);
 
         // check if source already exists
-        $id = \F3::get('PARAMS["id"]');
+        $id = $params['id'];
         $sourceExists = $sourcesDao->isValid('id', $id);
 
         // load password value if not changed for spouts containing passwords
@@ -174,7 +177,7 @@ class Sources extends BaseController {
             $spoutInstance = $spoutLoader->get($spout);
 
             foreach ($spoutInstance->params as $spoutParamName => $spoutParam) {
-                if ($spoutParam['type'] == 'password'
+                if ($spoutParam['type'] === 'password'
                     && empty($data[$spoutParamName])) {
                     if (!isset($oldSource)) {
                         $oldSource = $sourcesDao->get($id);
@@ -213,7 +216,7 @@ class Sources extends BaseController {
         ];
 
         // only for selfoss ui (update stats in navigation)
-        if ($isAjax) {
+        if ($f3->ajax()) {
             // get new tag list with updated count values
             $tagController = new \controllers\Tags();
             $return['tags'] = $tagController->tagsListAsString();
@@ -245,12 +248,15 @@ class Sources extends BaseController {
      * delete source
      * json
      *
+     * @param Base $f3 fatfree base instance
+     * @param array $params query string parameters
+     *
      * @return void
      */
-    public function remove() {
+    public function remove(Base $f3, array $params) {
         $this->needsLoggedIn();
 
-        $id = \F3::get('PARAMS["id"]');
+        $id = $params['id'];
 
         $sourceDao = new \daos\Sources();
 
@@ -274,10 +280,13 @@ class Sources extends BaseController {
      * update source
      * text
      *
+     * @param Base $f3 fatfree base instance
+     * @param array $params query string parameters
+     *
      * @return void
      */
-    public function update() {
-        $id = \F3::get('PARAMS["id"]');
+    public function update(Base $f3, array $params) {
+        $id = $params['id'];
 
         // only allow access for localhost and authenticated users
         if (!$this->allowedToUpdate()) {
@@ -304,9 +313,9 @@ class Sources extends BaseController {
         $sources = $sourcesDao->getWithIcon();
 
         // get last icon
-        for ($i = 0; $i < count($sources); ++$i) {
-            $sources[$i]['params'] = json_decode(html_entity_decode($sources[$i]['params']), true);
-            $sources[$i]['error'] = $sources[$i]['error'] == null ? '' : $sources[$i]['error'];
+        foreach ($sources as &$source) {
+            $source['params'] = json_decode(html_entity_decode($source['params']), true);
+            $source['error'] = $source['error'] === null ? '' : $source['error'];
         }
 
         $this->view->jsonSuccess($sources);
@@ -334,8 +343,6 @@ class Sources extends BaseController {
      */
     public function stats() {
         $this->needsLoggedInOrPublicMode();
-
-        $itemDao = new \daos\Items();
 
         // load sources
         $sourcesDao = new \daos\Sources();

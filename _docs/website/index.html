@@ -94,8 +94,8 @@
             <div class="documentation-entry">
                 <p>selfoss is not a hosted service. It has to be installed on your own webserver. This webserver must fulfil the following requirements (which are available from most providers)</p>
                 <ul>
-                    <li>PHP 5.4 or higher with the php-gd and php-http extensions enabled. Some spouts may also require curl or mbstring extensions.</li>
-                    <li>MySQL 5.5.3 or higher, PostgreSQL, or Sqlite</li>
+                    <li>PHP 5.6 or higher with the php-gd and php-http extensions enabled. Some spouts may also require curl or mbstring extensions.</li>
+                    <li>MySQL 5.5.3 or higher, PostgreSQL, or SQLite</li>
                     <li>Apache Webserver (nginx and lighttpd also possible)</li>
                 </ul>
 
@@ -277,15 +277,11 @@ db_port=3306</code>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">language</td>
-                        <td>set 0 or leave empty for auto detection (browser language) or set "de" for German, "en" for English, "fr" for French, "cs" for Czech, "nl" for Dutch, "ru" for Russian, "tr" for Turkish, "lv" for Latvian, "tw" for Traditional Chinese, "cn" for Simplified Chinese</td>
+                        <td>set 0 or leave empty for auto detection (browser language) or set "de" for German, "en" for English, "fr" for French, "cs" for Czech, "nl" for Dutch, "ru" for Russian, "tr" for Turkish, "lv" for Latvian, "zh-TW" for Traditional Chinese, "zh-CN" for Simplified Chinese</td>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">anonymizer</td>
                         <td>set here your anonymizer service url. e.g.: anonymizer=https://anonym.to/?</td>
-                    </tr>
-                    <tr>
-                        <td class="documentation-first-column">use_system_font</td>
-                        <td>set use_system_font=1 if you have problems with special characters. Then instead of Open Sans the font Arial will be used.</td>
                     </tr>
                     <tr>
                         <td class="documentation-first-column">allow_public_update_access</td>
